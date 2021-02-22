@@ -13,8 +13,8 @@ recent robotic advancement opens up many new possibilities for the rescue team.
 | ------------- | ------------- |
 | [Prof Boyd Anderson](https://github.com/boydanderson) | Instructor |
 | [Darren Loh Rui Jie](https://github.com/saintmist21) | To be decided |
-| [Hoang Trong Tan](https://github.com/) | To be decided |
-| [Hu Jialun](https://github.com/) | To be decided |
+| [Hoang Trong Tan](https://github.com/jushg) | To be decided |
+| [Hu Jialun](https://github.com/SuibianP) | To be decided |
 | [Zhu Zikun](https://github.com/zikunz) | To be decided |
 
 # Objectives, Algorithms and Design Features
