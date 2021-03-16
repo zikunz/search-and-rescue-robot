@@ -17,13 +17,13 @@ volatile TDirection dir = STOP;
  * Alex's configuration constants
  */
 
-// Number of ticks per revolution from the 
+// Number of ticks per revolution from the
 // wheel encoder.
 
 #define COUNTS_PER_REV      1
 
 // Wheel circumference in cm.
-// We will use this to calculate forward/backward distance traveled 
+// We will use this to calculate forward/backward distance traveled
 // by taking revs * WHEEL_CIRC
 
 #define WHEEL_CIRC          1
@@ -41,14 +41,14 @@ volatile TDirection dir = STOP;
 
 // Store the ticks from Alex's left and
 // right encoders.
-volatile unsigned long leftForwardTicks; 
+volatile unsigned long leftForwardTicks;
 volatile unsigned long rightForwardTicks;
-volatile unsigned long leftReverseTicks; 
+volatile unsigned long leftReverseTicks;
 volatile unsigned long rightReverseTicks;
 
-volatile unsigned long leftForwardTicksTurns; 
+volatile unsigned long leftForwardTicksTurns;
 volatile unsigned long rightForwardTicksTurns;
-volatile unsigned long leftReverseTicksTurns; 
+volatile unsigned long leftReverseTicksTurns;
 volatile unsigned long rightReverseTicksTurns;
 
 // Store the revolutions on Alex's left
@@ -65,17 +65,17 @@ unsigned long newDist;
 
 
 /*
- * 
+ *
  * Alex Communication Routines.
- * 
+ *
  */
- 
+
 TResult readPacket(TPacket *packet)
 {
     // Reads in data from the serial port and
     // deserializes it.Returns deserialized
     // data in "packet".
-    
+
     char buffer[PACKET_SIZE];
 
     len = readSerial(buffer);
@@ -84,7 +84,7 @@ TResult readPacket(TPacket *packet)
       return PACKET_INCOMPLETE;
     else
       return deserialize(buffer, len, packet);
-    
+
 }
 
 void sendStatus()
@@ -99,9 +99,9 @@ void sendStatus()
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
-  unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks, 
-  rightRevserseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns, 
-  rightReverseTicksTurns, forwardDist, reverseDist}; 
+  unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks,
+  rightRevserseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns,
+  rightReverseTicksTurns, forwardDist, reverseDist};
   sendResponse(&statusPacket);
 }
 
@@ -110,7 +110,7 @@ void sendMessage(const char *message)
 {
   // Sends text messages back to the Pi. Useful
   // for debugging.
-  
+
   TPacket messagePacket;
   messagePacket.packetType=PACKET_TYPE_MESSAGE;
   strncpy(messagePacket.data, message, MAX_STR_LEN);
@@ -129,30 +129,30 @@ void sendBadPacket()
 {
   // Tell the Pi that it sent us a packet with a bad
   // magic number.
-  
+
   TPacket badPacket;
   badPacket.packetType = PACKET_TYPE_ERROR;
   badPacket.command = RESP_BAD_PACKET;
   sendResponse(&badPacket);
-  
+
 }
 
 void sendBadChecksum()
 {
   // Tell the Pi that it sent us a packet with a bad
   // checksum.
-  
+
   TPacket badChecksum;
   badChecksum.packetType = PACKET_TYPE_ERROR;
   badChecksum.command = RESP_BAD_CHECKSUM;
-  sendResponse(&badChecksum);  
+  sendResponse(&badChecksum);
 }
 
 void sendBadCommand()
 {
   // Tell the Pi that we don't understand its
   // command sent to us.
-  
+
   TPacket badCommand;
   badCommand.packetType=PACKET_TYPE_ERROR;
   badCommand.command=RESP_BAD_COMMAND;
@@ -173,7 +173,7 @@ void sendOK()
   TPacket okPacket;
   okPacket.packetType = PACKET_TYPE_RESPONSE;
   okPacket.command = RESP_OK;
-  sendResponse(&okPacket);  
+  sendResponse(&okPacket);
 }
 
 void sendResponse(TPacket *packet)
@@ -189,9 +189,9 @@ void sendResponse(TPacket *packet)
 
 
 /*
- * Setup and start codes for external interrupts and 
+ * Setup and start codes for external interrupts and
  * pullup resistors.
- * 
+ *
  */
 // Enable pull up resistors on pins 2 and 3
 void enablePullups()
@@ -201,8 +201,8 @@ void enablePullups()
   PORTD |= 0b110;
   // Use bare-metal to enable the pull-up resistors on pins
   // 2 and 3. These are pins PD2 and PD3 respectively.
-  // We set bits 2 and 3 in DDRD to 0 to make them inputs. 
-  
+  // We set bits 2 and 3 in DDRD to 0 to make them inputs.
+
 }
 
 // Functions to be called by INT0 and INT1 ISRs.
@@ -263,9 +263,9 @@ ISR(INT1_vect) {
 
 /*
  * Setup and start codes for serial communications
- * 
+ *
  */
-// Set up the serial connection. For now we are using 
+// Set up the serial connection. For now we are using
 // Arduino Wiring, you will replace this later
 // with bare-metal code.
 void setupSerial()
@@ -282,11 +282,11 @@ void startSerial()
 {
   // Empty for now. To be replaced with bare-metal code
   // later on.
-  
+
 }
 
 // Read the serial port. Returns the read character in
-// ch if available. Also returns TRUE if ch is valid. 
+// ch if available. Also returns TRUE if ch is valid.
 // This will be replaced later with bare-metal code.
 
 int readSerial(char *buffer)
@@ -310,7 +310,7 @@ void writeSerial(const char *buffer, int len)
 
 /*
  * Alex's motor drivers.
- * 
+ *
  */
 
 // Set up Alex's motors. Right now this is empty, but
@@ -320,7 +320,7 @@ void setupMotors()
 {
   DDRB |= 0b110;
   DDRD |= 0b110000;
-  /* Our motor set up is:  
+  /* Our motor set up is:
    *    A1IN - Pin 5, PD5, OC0B
    *    A2IN - Pin 6, PD6, OC0A
    *    B1IN - Pin 10, PB2, OC1B
@@ -333,7 +333,7 @@ void setupMotors()
 // blank.
 void startMotors()
 {
-  
+
 }
 
 // Convert percentages to PWM values
@@ -355,6 +355,14 @@ int pwmVal(float speed)
 // continue moving forward indefinitely.
 void forward(float dist, float speed)
 {
+  //Code tells us how far to move//dd
+  if(dist > 0)
+      deltaDist = dist;
+  else
+      deltaDist=9999999;
+
+  newDist=forwardDist + deltaDist;
+
   dir = FORWARD;
   int val = pwmVal(speed);
 
@@ -365,7 +373,7 @@ void forward(float dist, float speed)
   // LF = Left forward pin, LR = Left reverse pin
   // RF = Right forward pin, RR = Right reverse pin
   // This will be replaced later with bare-metal code.
-  
+
   analogWrite(LF, val);
   analogWrite(RF, val);
   analogWrite(LR,0);
@@ -383,7 +391,7 @@ void reverse(float dist, float speed)
 
   int val = pwmVal(speed);
 
-  // For now we will ignore dist and 
+  // For now we will ignore dist and
   // reverse indefinitely. We will fix this
   // in Week 9.
 
@@ -447,26 +455,26 @@ void stop()
 
 /*
  * Alex's setup and run codes
- * 
+ *
  */
 
 // Clears all our counters
 void clearCounters()
 {
-  leftForwardTicks = 0; 
+  leftForwardTicks = 0;
   rightForwardTicks = 0;
-  leftReverseTicks = 0; 
+  leftReverseTicks = 0;
   rightReverseTicks = 0;
-  
-  leftForwardTicksTurns = 0; 
+
+  leftForwardTicksTurns = 0;
   rightForwardTicksTurns = 0;
-  leftReverseTicksTurns = 0; 
+  leftReverseTicksTurns = 0;
   rightReverseTicksTurns = 0;
 
   leftRevs=0;
   rightRevs=0;
   forwardDist=0;
-  reverseDist=0; 
+  reverseDist=0;
 }
 
 // Clears one particular counter
@@ -512,7 +520,7 @@ void handleCommand(TPacket *command)
 	  case COMMAND_CLEAR_STATS:
 		  clearOneCounter(command -> params[0]);
 		  sendOK();
-		  break;  
+		  break;
     default:
       sendBadCommand();
   }
@@ -526,7 +534,7 @@ void waitForHello()
   {
     TPacket hello;
     TResult result;
-    
+
     do
     {
       result = readPacket(&hello);
@@ -536,7 +544,7 @@ void waitForHello()
     {
       if(hello.packetType == PACKET_TYPE_HELLO)
       {
-     
+
 
         sendOK();
         exit=1;
@@ -603,7 +611,7 @@ void loop() {
   TPacket recvPacket; // This holds commands from the Pi
 
   TResult result = readPacket(&recvPacket);
-  
+
   if(result == PACKET_OK)
     handlePacket(&recvPacket);
   else
@@ -615,6 +623,6 @@ void loop() {
       if(result == PACKET_CHECKSUM_BAD)
       {
         sendBadChecksum();
-      } 
-      
+      }
+
 }
