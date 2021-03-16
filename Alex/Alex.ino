@@ -97,7 +97,7 @@ void sendStatus()
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
-  unsigned long paramArray [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks, 
+  unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks, 
   rightRevserseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns, 
   rightReverseTicksTurns, forwardDist, reverseDist}; 
 }
