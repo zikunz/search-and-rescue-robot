@@ -2,6 +2,7 @@
 #include <serialize.h>
 #include "packet.h"
 #include "constants.h"
+#include <math.h>
 
 typedef enum {
   STOP = 0,
@@ -34,6 +35,16 @@ volatile TDirection dir = STOP;
 #define LR                  5   // Left reverse pin
 #define RF                  10  // Right forward pin
 #define RR                  9   // Right reverse pin
+#define ALEX_LENGTH         16   //alex length
+#define ALEX_BREADTH        6   //alex breath
+#define PI                  3.141592652 // PI, for calculating turn circumference
+
+// Alex's diagonal. We compute and store this value once
+// since it is expensive to compute and really does not change
+float alexDiagonal = 0.0;
+float alexCir = 0.0;
+
+
 
 /*
 *    Alex's State Variables
@@ -59,10 +70,14 @@ volatile unsigned long rightRevs;
 // Forward and backward distance traveled
 volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
+
 //Variables to keep track of whether we have moved a command distance//
 unsigned long deltaDist;
 unsigned long newDist;
 
+// Variables to keep track of our turning angle
+unsigned long deltaTicks;
+unsigned long targetTicks;
 
 /*
 *
@@ -573,6 +588,10 @@ void sendStatus()
 
   void setup() {
     // put your setup code here, to run once:
+    alexDiagonal = sqrt((ALEX_LEGTH * ALEX_LENGTH) + (ALEX_BREADTH *
+      ALEX_BREADTH));
+
+    alexCirc = PI * alexDiagonal;
 
     cli();
     setupEINT();
