@@ -387,6 +387,14 @@ void sendStatus()
   // continue reversing indefinitely.
   void reverse(float dist, float speed)
   {
+    //Code tells us how far to move
+    if(dist > 0)
+    deltaDist = dist;
+    else
+    deltaDist=9999999;
+
+    newDist=reverseDist + deltaDist;
+
     dir = BACKWARD;
 
     int val = pwmVal(speed);
