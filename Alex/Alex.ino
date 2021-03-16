@@ -59,6 +59,8 @@ volatile unsigned long rightRevs;
 // Forward and backward distance traveled
 volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
+unsigned long deltaDist;
+unsigned long newDist;
 
 
 /*
@@ -74,7 +76,6 @@ TResult readPacket(TPacket *packet)
     // data in "packet".
     
     char buffer[PACKET_SIZE];
-    int len;
 
     len = readSerial(buffer);
 
