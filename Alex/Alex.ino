@@ -437,7 +437,9 @@ void sendStatus()
     // To convert to ticks, we multiply by COUNTS_PER_REV.
 
     unsigned long ticks=(unsigned long) ((ang * alexCirc * COUNTS_PER_REV) /(360 * WHEEL_CIRC));
+
     return ticks;
+  }
 
 
 
@@ -449,9 +451,20 @@ void sendStatus()
 
   void left(float ang, float speed)
   {
+    int val = pwmVal(speed);
 
     dir = LEFT;
-    int val = pwmVal(speed);
+
+    if(ang == 0)
+      deltaTicks=99999999;
+    else
+    {
+      deltaTicks=computeDeltaTicks(ang);
+    }
+
+    targetTicks = leftReverseTicksTurns + deltaTicks;
+
+
 
     // For now we will ignore ang. We will fix this in Week 9.
     // We will also replace this code with bare-metal later.
@@ -470,8 +483,18 @@ void sendStatus()
   // turn right indefinitely.
   void right(float ang, float speed)
   {
-    dir = RIGHT;
     int val = pwmVal(speed);
+
+    dir = RIGHT;
+
+    if(ang == 0)
+      deltaTicks=99999999;
+    else
+    {
+      deltaTicks=computeDeltaTicks(ang);
+    }
+
+    targetTicks = rightReverseTicksTurns + deltaTicks;
 
     // For now we will ignore ang. We will fix this in Week 9.
     // We will also replace this code with bare-metal later.
