@@ -42,7 +42,7 @@ volatile TDirection dir = STOP;
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
 float alexDiagonal = 0.0;
-float alexCir = 0.0;
+float alexCirc = 0.0;
 
 
 
@@ -426,14 +426,30 @@ void sendStatus()
     analogWrite(LF, 0);
     analogWrite(RF, 0);
   }
+  //New function to estimate number of wheel leftTicks
+  //needed to turn an angle
+  unsigned long computeDeltaTicks(float ang)
+  {
+    //We will assume that angular distance  moved=linear distance moved in one wheels
+    //revolution.This is (probably) incorrect but simplifes calculation.
+    //# of wheel revs to make one full 360 turn is alexCirc/WHEEL_CIRC
+    //This is for 360.For ang degrees it will be(ang *alexCirc)/(360 * WHEEL_CIRC)
+    // To convert to ticks, we multiply by COUNTS_PER_REV.
+
+    unsigned long ticks=(unsignedlong) ((ang * alexCirc * COUNTS_PER_REV) /(360 * WHEEL_CIRC));
+    return ticks;
+
+
 
   // Turn Alex left "ang" degrees at speed "speed".
   // "speed" is expressed as a percentage. E.g. 50 is
   // turn left at half speed.
   // Specifying an angle of 0 degrees will cause Alex to
   // turn left indefinitely.
+
   void left(float ang, float speed)
   {
+
     dir = LEFT;
     int val = pwmVal(speed);
 
