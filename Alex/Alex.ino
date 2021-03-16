@@ -59,6 +59,7 @@ volatile unsigned long rightRevs;
 // Forward and backward distance traveled
 volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
+//Variables to keep track of whether we have moved a command distance//
 unsigned long deltaDist;
 unsigned long newDist;
 
