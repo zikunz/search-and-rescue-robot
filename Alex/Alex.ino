@@ -436,7 +436,7 @@ void sendStatus()
     //This is for 360.For ang degrees it will be(ang *alexCirc)/(360 * WHEEL_CIRC)
     // To convert to ticks, we multiply by COUNTS_PER_REV.
 
-    unsigned long ticks=(unsignedlong) ((ang * alexCirc * COUNTS_PER_REV) /(360 * WHEEL_CIRC));
+    unsigned long ticks=(unsigned long) ((ang * alexCirc * COUNTS_PER_REV) /(360 * WHEEL_CIRC));
     return ticks;
 
 
