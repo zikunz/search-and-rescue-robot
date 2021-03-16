@@ -504,6 +504,13 @@ void handleCommand(TPacket *command)
     	sendOK();
         stop();
       break;
+    case COMMAND_GET_STATS:
+    	sendStatus();
+		  break;
+	  case COMMAND_CLEAR_STATS:
+		  clearOneCounter(command -> params[0]);
+		  sendOK();
+		  break;  
     default:
       sendBadCommand();
   }
