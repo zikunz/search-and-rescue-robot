@@ -691,7 +691,7 @@ void sendStatus()
       sendBadChecksum();
     }
 
-  }
+
 
   if(deltaDist > 0)
   {
@@ -720,3 +720,38 @@ void sendStatus()
       stop();
     }
   }
+
+
+  if(deltaTicks>0)
+  {
+     if(dir==LEFT)
+     {
+       if(leftForwardTicksTurns>=targetTicks)
+       {
+         deltaTicks=0;
+         targetTicks=0;
+         stop();
+       }
+     }
+     else
+       if(dir==RIGHT)
+       {
+         if(rightReverseTicksTurns>=targetTicks)
+         {
+           deltaTicks=0;
+           targetTicks=0;
+           stop();
+         }
+       }
+       else
+         if(dir==STOP)
+         {
+           deltaTicks=0;
+           targetTicks=0
+           stop();
+         }
+    }
+
+
+
+}
