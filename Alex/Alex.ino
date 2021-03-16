@@ -100,6 +100,7 @@ void sendStatus()
   unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks, 
   rightRevserseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns, 
   rightReverseTicksTurns, forwardDist, reverseDist}; 
+  sendResponse(&statusPacket);
 }
 
 
