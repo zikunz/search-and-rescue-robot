@@ -21,13 +21,13 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the
 // wheel encoder.
 
-#define COUNTS_PER_REV      1 //CHANGE THIS BASE ON WK7ST2
+#define COUNTS_PER_REV      1
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled
 // by taking revs * WHEEL_CIRC
 
-#define WHEEL_CIRC          20.42 //CHANGE THIS BASE WK7ST2
+#define WHEEL_CIRC          1
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
@@ -37,7 +37,6 @@ volatile TDirection dir = STOP;
 #define RR                  9   // Right reverse pin
 #define ALEX_LENGTH         16   //alex length
 #define ALEX_BREADTH        6   //alex breath
-#define PI                  3.141592652 // PI, for calculating turn circumference
 
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
@@ -93,7 +92,7 @@ TResult readPacket(TPacket *packet)
 
   char buffer[PACKET_SIZE];
 
-  len = readSerial(buffer);
+  int len = readSerial(buffer);
 
   if(len == 0)
   return PACKET_INCOMPLETE;
@@ -115,7 +114,7 @@ void sendStatus()
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
   unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks,
-    rightRevserseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns,
+    rightReverseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns,
     rightReverseTicksTurns, forwardDist, reverseDist};
     sendResponse(&statusPacket);
   }
@@ -627,7 +626,7 @@ void sendStatus()
 
   void setup() {
     // put your setup code here, to run once:
-    alexDiagonal = sqrt((ALEX_LEGTH * ALEX_LENGTH) + (ALEX_BREADTH *
+    alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH *
       ALEX_BREADTH));
 
     alexCirc = PI * alexDiagonal;
@@ -747,7 +746,7 @@ void sendStatus()
          if(dir==STOP)
          {
            deltaTicks=0;
-           targetTicks=0
+           targetTicks=0;
            stop();
          }
     }
