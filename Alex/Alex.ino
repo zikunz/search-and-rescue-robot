@@ -21,13 +21,13 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the
 // wheel encoder.
 
-#define COUNTS_PER_REV      1
+#define COUNTS_PER_REV      1 //CHANGE THIS BASE ON WK7ST2
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled
 // by taking revs * WHEEL_CIRC
 
-#define WHEEL_CIRC          1
+#define WHEEL_CIRC          20.42 //CHANGE THIS BASE WK7ST2
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
