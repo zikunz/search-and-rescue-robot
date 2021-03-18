@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <serialize.h>
-#include "packet.h"
-#include "constants.h"
+#include "../../common/packet.h"
+#include "../../common/constants.h"
 #include <math.h>
 
 typedef enum {
@@ -21,13 +21,13 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the
 // wheel encoder.
 
-#define COUNTS_PER_REV      1
+#define COUNTS_PER_REV      28
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled
 // by taking revs * WHEEL_CIRC
 
-#define WHEEL_CIRC          1
+#define WHEEL_CIRC          20.42
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
@@ -113,9 +113,16 @@ void sendStatus()
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
-  unsigned long params [10] = {leftForwardTicks, rightForwardTicks, leftReverseTicks,
-    rightReverseTicks, leftForwardTicksTurns, rightForwardTicksTurns, leftReverseTicksTurns,
-    rightReverseTicksTurns, forwardDist, reverseDist};
+  statusPacket.params[0] = leftForwardTicks;
+  statusPacket.params[1] = rightForwardTicks;
+  statusPacket.params[2] = leftReverseTicks;
+  statusPacket.params[3] = rightReverseTicks;
+  statusPacket.params[4] = leftForwardTicksTurns;
+  statusPacket.params[5] = rightForwardTicksTurns;
+  statusPacket.params[6] = leftReverseTicksTurns;
+  statusPacket.params[7] =  rightReverseTicksTurns;
+  statusPacket.params[8] = forwardDist;
+  statusPacket.params[9] = reverseDist;
     sendResponse(&statusPacket);
   }
 
@@ -131,7 +138,7 @@ void sendStatus()
     sendResponse(&messagePacket);
   }
 
-  void dbprint(char *format, ...) {
+  void dbprint(const char *format, ...) {
     va_list args;
     char buffer[128];
     va_start(args, format);
@@ -210,14 +217,18 @@ void sendStatus()
   // Enable pull up resistors on pins 2 and 3
   void enablePullups()
   {
-    DDRD &= 0b001;
+    DDRD &= 0b11110011;
     //PIND |= 0b110;
-    PORTD |= 0b110;
+    PORTD |= 0b00001100;
     // Use bare-metal to enable the pull-up resistors on pins
     // 2 and 3. These are pins PD2 and PD3 respectively.
     // We set bits 2 and 3 in DDRD to 0 to make them inputs.
 
   }
+
+void printTicks() {
+    dbprint("%d, %d, %d, %d, %d, %d, %d, %d", leftForwardTicks, leftReverseTicks, leftForwardTicksTurns, leftReverseTicksTurns, rightForwardTicks, rightReverseTicks, rightForwardTicksTurns, rightReverseTicksTurns);
+}
 
   // Functions to be called by INT0 and INT1 ISRs.
   void leftISR() {
@@ -267,10 +278,12 @@ void sendStatus()
 
   ISR(INT0_vect) {
     leftISR();
+    printTicks();
   }
 
   ISR(INT1_vect) {
     rightISR();
+    //printTicks();
   }
 
   // Implement INT0 and INT1 ISRs above.
