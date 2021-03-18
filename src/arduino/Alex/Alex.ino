@@ -1,7 +1,10 @@
 #include <stdarg.h>
-#include <serialize.h>
-#include "../../common/packet.h"
-#include "../../common/constants.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <Arduino.h>
+#include "serialize.h"
+#include "packet.h"
+#include "constants.h"
 #include <math.h>
 
 typedef enum {
@@ -78,6 +81,29 @@ unsigned long newDist;
 unsigned long deltaTicks;
 unsigned long targetTicks;
 
+  // Read the serial port. Returns the read character in
+  // ch if available. Also returns TRUE if ch is valid.
+  // This will be replaced later with bare-metal code.
+
+  int readSerial(char *buffer)
+  {
+
+    int count=0;
+
+    while(Serial.available())
+    buffer[count++] = Serial.read();
+
+    return count;
+  }
+
+  // Write to the serial port. Replaced later with
+  // bare-metal code
+
+  void writeSerial(const char *buffer, int len)
+  {
+    Serial.write((const unsigned char *)buffer, len);
+  }
+
 /*
 *
 * Alex Communication Routines.
@@ -100,6 +126,17 @@ TResult readPacket(TPacket *packet)
   return deserialize(buffer, len, packet);
 
 }
+
+  void sendResponse(TPacket *packet)
+  {
+    // Takes a packet, serializes it then sends it out
+    // over the serial port.
+    char buffer[PACKET_SIZE];
+    int len;
+
+    len = serialize(buffer, packet, sizeof(TPacket));
+    writeSerial(buffer, len);
+  }
 
 void sendStatus()
 {
@@ -197,16 +234,6 @@ void sendStatus()
     sendResponse(&okPacket);
   }
 
-  void sendResponse(TPacket *packet)
-  {
-    // Takes a packet, serializes it then sends it out
-    // over the serial port.
-    char buffer[PACKET_SIZE];
-    int len;
-
-    len = serialize(buffer, packet, sizeof(TPacket));
-    writeSerial(buffer, len);
-  }
 
 
   /*
@@ -312,28 +339,7 @@ void printTicks() {
 
   }
 
-  // Read the serial port. Returns the read character in
-  // ch if available. Also returns TRUE if ch is valid.
-  // This will be replaced later with bare-metal code.
 
-  int readSerial(char *buffer)
-  {
-
-    int count=0;
-
-    while(Serial.available())
-    buffer[count++] = Serial.read();
-
-    return count;
-  }
-
-  // Write to the serial port. Replaced later with
-  // bare-metal code
-
-  void writeSerial(const char *buffer, int len)
-  {
-    Serial.write(buffer, len);
-  }
 
   /*
   * Alex's motor drivers.
