@@ -1,11 +1,6 @@
 #!/usr/bin/make
 
-PRG = arduino
-MCU = atmega328p
-AVRDUDE = avrdude -c $(PRG) -p $(MCU) # flags needed for all invocation
-PORT = $(firstword $(wildcard /dev/ttyACM*))
-$(if $(shell $(AVRDUDE) -P $(PORT)), $(error PORT not correct.), $(info Select PORT $(PORT)))
-export
+include common/variables.mk
 
 all:
 	$(MAKE) -w -C arduino
@@ -16,4 +11,12 @@ clean:
 	$(MAKE) -w -C arduino clean
 	$(MAKE) -w -C pi clean
 
-.PHONY: all clean
+lint:
+	$(MAKE) -w -C arduino lint
+	$(MAKE) -w -C pi lint
+
+format:
+	$(MAKE) -w -C arduino format
+	$(MAKE) -w -C pi format
+
+.PHONY: all clean lint format

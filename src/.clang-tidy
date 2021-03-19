@@ -1,0 +1,10 @@
+Checks: '*,
+-hicpp-deprecated-headers, # not sure if <cstdio> etc exist for avr-libc
+-modernize-deprecated-headers,
+-modernize-use-trailing-return-type,
+-hicpp-vararg,
+-cppcoreguidelines-pro-type-vararg,
+-google-readability-casting,
+-hicpp-no-array-decay,
+-android-*
+'
