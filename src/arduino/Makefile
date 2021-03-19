@@ -13,14 +13,12 @@ INC += -I ../common/ -I .
 ###### AVR TOOLCHAIN ######
 CC = avr-gcc
 OBJCOPY = avr-objcopy
-PRG = arduino
 BIN = alex
-MCU = atmega328p
 CLK = 16000000L
 CXXFLAGS += -x c++ -std=gnu++17 -Wall -Wextra -Wpedantic -Os -DF_CPU=$(CLK) -mmcu=$(MCU) -fno-exceptions -fno-threadsafe-statics -ffunction-sections -fdata-sections # We may want to add -Werror later
-AVRDUDE = avrdude -c $(PRG) -p $(MCU) # flags needed for all invocation
 BAUD = 115200
 PORT = $(firstword $(wildcard /dev/ttyACM*))
+export PORT
 
 flash: $(BIN).hex
 	if [ -z "$(PORT)" ]; then false; fi

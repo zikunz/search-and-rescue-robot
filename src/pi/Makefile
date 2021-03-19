@@ -2,7 +2,7 @@
 
 SRC += $(shell find . ../common/ -name '*.c' -o -name '*.cpp')
 INC += -I ../common/ -I .
-CXXFLAGS += -pthread -std=gnu++17 -Wall -Wextra -Wpedantic # We may want to add -Werror later
+CXXFLAGS += -pthread -std=gnu++17 -Wall -Wextra -Wpedantic -DPORT_NAME=\"$(PORT)\" # We may want to add -Werror later
 
 client: $(SRC)
 	$(CXX) $(CXXFLAGS) $(INC) $(SRC) -o $@

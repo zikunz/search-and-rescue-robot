@@ -8,7 +8,6 @@
 #include "../common/serialize.h"
 #include "../common/constants.h"
 
-#define PORT_NAME			"/dev/ttyACM0"
 #define BAUD_RATE			B9600
 
 int exitFlag=0;
