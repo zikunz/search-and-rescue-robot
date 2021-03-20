@@ -75,12 +75,12 @@ volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
 
 // Variables to keep track of whether we have moved a command distance//
-unsigned long deltaDist;
-unsigned long newDist;
+volatile unsigned long deltaDist;
+volatile unsigned long newDist;
 
 // Variables to keep track of our turning angle
-unsigned long deltaTicks;
-unsigned long targetTicks;
+volatile unsigned long deltaTicks;
+volatile unsigned long targetTicks;
 
 // Read the serial port. Returns the read character in
 // ch if available. Also returns TRUE if ch is valid.
