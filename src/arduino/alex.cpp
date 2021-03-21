@@ -1,14 +1,76 @@
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <stdarg.h>
 #if !(defined(__AVR) || defined(AVR) || defined(__AVR_ATmega328P__))
 #include <avr/iom328p.h>  // clang-tidy cannot know this
 #endif
-#include <Arduino.h>
+#include <avr/interrupt.h>
+#include <avr/io.h>
+#include <inttypes.h>
+#include <string.h>
 #include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include "constants.h"
 #include "packet.h"
 #include "serialize.h"
+
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#define NOT_ON_TIMER 0
+#define TIMER0A 1
+#define TIMER0B 2
+#define TIMER1A 3
+#define TIMER1B 4
+#define TIMER2A 6
+#define TIMER2B 7
+
+const uint8_t digital_pin_to_timer_PGM[] = {
+    NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, TIMER2B,      NOT_ON_TIMER,
+    TIMER0B,      TIMER0A,      NOT_ON_TIMER, NOT_ON_TIMER, TIMER1A,
+    TIMER1B,      TIMER2A,      NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER,
+    NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER,
+};
+
+void analogWrite(uint8_t pin, int val) {
+    switch (digital_pin_to_timer_PGM[pin]) {
+#if defined(TCCR0) && defined(COM00) && !defined(__AVR_ATmega8__)
+        case TIMER0A:
+            // connect pwm to pin on timer 0
+            sbi(TCCR0, COM00);
+            OCR0 = val;
+            break;
+#endif
+
+#if defined(TCCR0A) && defined(COM0A1)
+        case TIMER0A:
+            sbi(TCCR0A, COM0A1);
+            OCR0A = val;
+            break;
+#endif
+
+        case TIMER0B:
+            sbi(TCCR0A, COM0B1);
+            OCR0B = val;
+            break;
+
+        case TIMER1A:
+            sbi(TCCR1A, COM1A1);
+            OCR1A = val;
+            break;
+
+        case TIMER1B:
+            sbi(TCCR1A, COM1B1);
+            OCR1B = val;
+            break;
+
+        case TIMER2A:
+            sbi(TCCR2A, COM2A1);
+            OCR2A = val;
+            break;
+
+        case TIMER2B:
+            sbi(TCCR2A, COM2B1);
+            OCR2B = val;
+            break;
+    }
+}
 
 typedef enum {
     STOP = 0,
@@ -55,32 +117,32 @@ float alexCirc = 0.0;
 
 // Store the ticks from Alex's left and
 // right encoders.
-volatile unsigned long leftForwardTicks;
-volatile unsigned long rightForwardTicks;
-volatile unsigned long leftReverseTicks;
-volatile unsigned long rightReverseTicks;
+volatile unsigned long leftForwardTicks = 0;
+volatile unsigned long rightForwardTicks = 0;
+volatile unsigned long leftReverseTicks = 0;
+volatile unsigned long rightReverseTicks = 0;
 
-volatile unsigned long leftForwardTicksTurns;
-volatile unsigned long rightForwardTicksTurns;
-volatile unsigned long leftReverseTicksTurns;
-volatile unsigned long rightReverseTicksTurns;
+volatile unsigned long leftForwardTicksTurns = 0;
+volatile unsigned long rightForwardTicksTurns = 0;
+volatile unsigned long leftReverseTicksTurns = 0;
+volatile unsigned long rightReverseTicksTurns = 0;
 
 // Store the revolutions on Alex's left
 // and right wheels
-volatile unsigned long leftRevs;
-volatile unsigned long rightRevs;
+volatile unsigned long leftRevs = 0;
+volatile unsigned long rightRevs = 0;
 
 // Forward and backward distance traveled
-volatile unsigned long forwardDist;
-volatile unsigned long reverseDist;
+volatile unsigned long forwardDist = 0;
+volatile unsigned long reverseDist = 0;
 
 // Variables to keep track of whether we have moved a command distance//
-volatile unsigned long deltaDist;
-volatile unsigned long newDist;
+volatile unsigned long deltaDist = 0;
+volatile unsigned long newDist = 0;
 
 // Variables to keep track of our turning angle
-volatile unsigned long deltaTicks;
-volatile unsigned long targetTicks;
+volatile unsigned long deltaTicks = 0;
+volatile unsigned long targetTicks = 0;
 
 // Read the serial port. Returns the read character in
 // ch if available. Also returns TRUE if ch is valid.
@@ -100,6 +162,7 @@ int readSerial(char* buffer) {
 // bare-metal code
 
 void writeSerial(const char* buffer, int len) {
+    
     Serial.write((const unsigned char*)buffer, len);
 }
 
@@ -308,8 +371,53 @@ ISR(INT1_vect) {
 // Arduino Wiring, you will replace this later
 // with bare-metal code.
 void setupSerial() {
-    // To replace later with bare-metal.
-    Serial.begin(9600);
+    // async
+    cbi(UCSR0C, UMSEL00);
+    cbi(UCSR0C, UMSEL01);
+    cbi(UCSR0C, UCPOL0);
+    // parity: none
+    cbi(UCSR0C, UPM00);
+    cbi(UCSR0C, UPM01);
+    // stop bit: 1
+    cbi(UCSR0C, USBS0);
+    // data size: 8
+    sbi(UCSR0C, UCSZ0);
+    sbi(UCSR0C, UCSZ1);
+    cbi(UCSR0B, UCSZ0);
+    // baud rate: 9600
+    uint16_t b = F_CLK / 16 / 9600 - 1;
+    UBRR0H = (uint8_t) (b >> 8);
+    UBRR0L = (uint8_t) b;
+    // single processor, normal transmission speed
+    cbi(UCSR0A, MPCM0);
+    cbi(UCSR0A, U2X0);
+}
+
+struct cbuf {
+    uint8_t buf[BUF_LEN],
+    uint8_t *head = buf,
+    uint8_t tail,
+};
+struct cbuf recvbuf= {
+    .head = buf,
+    .tail = ((uint8_t *)(&buf + 1))[-1],
+};
+struct cbuf sendbuf= {
+    .head = buf,
+    .tail = ((uint8_t *)(&buf + 1))[-1],
+};
+
+ISR(USART_RX_vect) {
+    uint8_t data = UDR0;
+    writebuf(&recvbuf, data);
+}
+
+ISR(USART_UDRE_vect) {
+    if (readbuf(&sendbuf, &data)) {
+	UDR0 = data;
+    } else {
+	cbi(UCSR0A, UDRIE0);
+    }
 }
 
 // Start the serial connection. For now we are using
@@ -317,8 +425,13 @@ void setupSerial() {
 // replace this later with bare-metal code.
 
 void startSerial() {
-    // Empty for now. To be replaced with bare-metal code
-    // later on.
+    // enable rx and tx
+    sbi(UCSR0B, TXEN0);
+    sbi(UCSR0B, RXEN0);
+    // enable interrupts
+    sbi(UCSR0B, TXCIE0);
+    // sbi(UCSR0B, RXCIE0);
+    sbi(UCSR0B, UDRIE0); // data reg empty interrupt
 }
 
 /*
@@ -375,6 +488,7 @@ void forward(float dist, float speed) {
 
     dir = FORWARD;
     int val = pwmVal(speed);
+    dbprint("%d", val);
 
     // For now we will ignore dist and move
     // forward indefinitely. We will fix this
@@ -496,6 +610,7 @@ void right(float ang, float speed) {
 
 // Stop Alex. To replace with bare-metal code later.
 void stop() {
+    dbprint("Stop");
     analogWrite(LF, 0);
     analogWrite(LR, 0);
     analogWrite(RF, 0);
@@ -540,6 +655,7 @@ void handleCommand(TPacket* command) {
         // For movement commands, param[0] = distance, param[1] = speed.
         case COMMAND_FORWARD:
             sendOK();
+            dbprint("%lu,%lu", command->params[0], command->params[1]);
             forward((float)command->params[0], (float)command->params[1]);
             break;
         case COMMAND_REVERSE:
@@ -601,7 +717,7 @@ void setup() {
     alexDiagonal =
         sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
 
-    alexCirc = PI * alexDiagonal;
+    alexCirc = M_PI * alexDiagonal;
 
     cli();
     setupEINT();
@@ -612,6 +728,7 @@ void setup() {
     enablePullups();
     initializeState();
     sei();
+    forward(0, 70);
 }
 
 void handlePacket(TPacket* packet) {
@@ -636,8 +753,6 @@ void handlePacket(TPacket* packet) {
 
 void loop() {
     // Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 2
-
-    // forward(0, 100);
 
     // Uncomment the code below for Week 9 Studio 2
 
@@ -692,5 +807,12 @@ void loop() {
             targetTicks = 0;
             stop();
         }
+    }
+}
+
+int main() {
+    setup();
+    while (1) {
+        loop();
     }
 }

@@ -18,7 +18,7 @@ INC += $(patsubst %, -I%,$(shell $(CC) -E -Wp,-v -xc++ /dev/null 2>&1 | awk '/\#
 OBJCOPY = avr-objcopy
 BIN = alex
 CLK = 16000000L
-CXXFLAGS += -x c++ -std=gnu++17 -Wall -Wextra -Wpedantic -Os -DF_CPU=$(CLK) -mmcu=$(MCU) -fno-exceptions -fno-threadsafe-statics -ffunction-sections -fdata-sections # We may want to add -Werror later
+CXXFLAGS += -x c++ -std=gnu++17 -Wall -Wextra -Wpedantic -O3 -DF_CPU=$(CLK) -mmcu=$(MCU) -fno-exceptions # We may want to add -Werror later
 BAUD = 115200
 
 flash: $(BIN).hex
@@ -27,9 +27,9 @@ flash: $(BIN).hex
 $(BIN).hex: $(BIN).elf
 	${OBJCOPY} -O ihex -R .eeprom $(BIN).elf $(BIN).hex
 
-$(BIN).elf:
-	$(CC) $(CXXFLAGS) $(INC) -w $(ARDUINO_SRC) -c
-	$(CC) *.o $(CXXFLAGS) $(INC) $(SRC) -o $@
+$(BIN).elf: $(SRC)
+	#$(CC) $(CXXFLAGS) $(INC) -w $(ARDUINO_SRC) -c
+	$(CC) $(CXXFLAGS) $(INC) $(SRC) -o $@
 
 clean:
 	rm -f *.hex *.elf *.o *.a
