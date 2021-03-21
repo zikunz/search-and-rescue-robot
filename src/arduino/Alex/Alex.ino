@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <serialize.h>
-#include "../../common/packet.h"
-#include "../../common/constants.h"
+#include "packet.h"
+#include "constants.h"
 #include <math.h>
 
 typedef enum {

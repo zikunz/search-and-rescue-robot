@@ -3,10 +3,10 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <stdint.h>
-#include "../common/packet.h"
+#include "packet.h"
 #include "serial.h"
-#include "../common/serialize.h"
-#include "../common/constants.h"
+#include "serialize.h"
+#include "constants.h"
 
 #define PORT_NAME			"/dev/ttyACM0"
 #define BAUD_RATE			B9600
@@ -147,7 +147,7 @@ void *receiveThread(void *p)
 				counter=0;
 				handlePacket(&packet);
 			}
-			else 
+			else
 				if(result != PACKET_INCOMPLETE)
 				{
 					printf("PACKET ERROR\n");
