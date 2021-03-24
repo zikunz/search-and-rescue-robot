@@ -1,4 +1,4 @@
-// #include <stdarg.h>
+#include <stdarg.h>
 #include <serialize.h>
 #include "packet.h"
 #include "constants.h"
