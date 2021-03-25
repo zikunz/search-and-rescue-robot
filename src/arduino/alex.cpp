@@ -1,25 +1,30 @@
 #if !(defined(__AVR) || defined(AVR) || defined(__AVR_ATmega328P__))
-#include <avr/iom328p.h>  // clang-tidy cannot know this
+#define __AVR_ATmega328P__
 #endif
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <inttypes.h>
-#include <string.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include "buffer.h"
 #include "constants.h"
 #include "packet.h"
 #include "serialize.h"
 
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #define NOT_ON_TIMER 0
+#define BUF_LEN 256
 #define TIMER0A 1
 #define TIMER0B 2
 #define TIMER1A 3
 #define TIMER1B 4
 #define TIMER2A 6
 #define TIMER2B 7
+
+volatile TBuffer sendbuf, recvbuf;
 
 const uint8_t digital_pin_to_timer_PGM[] = {
     NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, TIMER2B,      NOT_ON_TIMER,
@@ -30,21 +35,10 @@ const uint8_t digital_pin_to_timer_PGM[] = {
 
 void analogWrite(uint8_t pin, int val) {
     switch (digital_pin_to_timer_PGM[pin]) {
-#if defined(TCCR0) && defined(COM00) && !defined(__AVR_ATmega8__)
-        case TIMER0A:
-            // connect pwm to pin on timer 0
-            sbi(TCCR0, COM00);
-            OCR0 = val;
-            break;
-#endif
-
-#if defined(TCCR0A) && defined(COM0A1)
         case TIMER0A:
             sbi(TCCR0A, COM0A1);
             OCR0A = val;
             break;
-#endif
-
         case TIMER0B:
             sbi(TCCR0A, COM0B1);
             OCR0B = val;
@@ -150,11 +144,9 @@ volatile unsigned long targetTicks = 0;
 
 int readSerial(char* buffer) {
     int count = 0;
-
-    while (Serial.available()) {
-        buffer[count++] = Serial.read();
+    for (count = 0; dataAvailable(&recvbuf); count += 1) {
+        readBuffer(&recvbuf, (unsigned char*)&buffer[count]);
     }
-
     return count;
 }
 
@@ -162,8 +154,10 @@ int readSerial(char* buffer) {
 // bare-metal code
 
 void writeSerial(const char* buffer, int len) {
-    
-    Serial.write((const unsigned char*)buffer, len);
+    for (int i = 0; i < len; i += 1) {
+        writeBuffer(&sendbuf, buffer[i]);
+    }
+    sbi(UCSR0B, UDRIE0);
 }
 
 /*
@@ -341,10 +335,8 @@ void setupEINT() {
     // Use bare-metal to configure pins 2 and 3 to be
     // falling edge triggered. Remember to enable
     // the INT0 and INT1 interrupts.
-    cli();
     EIMSK |= 0b11;
     EICRA = 0b1010;
-    sei();
 }
 
 // Implement the external interrupt ISRs below.
@@ -353,12 +345,10 @@ void setupEINT() {
 
 ISR(INT0_vect) {
     leftISR();
-    printTicks();
 }
 
 ISR(INT1_vect) {
     rightISR();
-    // printTicks();
 }
 
 // Implement INT0 and INT1 ISRs above.
@@ -371,6 +361,8 @@ ISR(INT1_vect) {
 // Arduino Wiring, you will replace this later
 // with bare-metal code.
 void setupSerial() {
+    initBuffer(&sendbuf, BUF_LEN);
+    initBuffer(&recvbuf, BUF_LEN);
     // async
     cbi(UCSR0C, UMSEL00);
     cbi(UCSR0C, UMSEL01);
@@ -381,42 +373,30 @@ void setupSerial() {
     // stop bit: 1
     cbi(UCSR0C, USBS0);
     // data size: 8
-    sbi(UCSR0C, UCSZ0);
-    sbi(UCSR0C, UCSZ1);
-    cbi(UCSR0B, UCSZ0);
+    sbi(UCSR0C, UCSZ00);
+    sbi(UCSR0C, UCSZ01);
+    cbi(UCSR0B, UCSZ02);
+    cbi(UCSR0B, TXB80);
     // baud rate: 9600
-    uint16_t b = F_CLK / 16 / 9600 - 1;
-    UBRR0H = (uint8_t) (b >> 8);
-    UBRR0L = (uint8_t) b;
+    uint16_t b = F_CPU / 16 / 9600 - 1;
+    UBRR0H = (uint8_t)(b >> 8);
+    UBRR0L = (uint8_t)b;
     // single processor, normal transmission speed
     cbi(UCSR0A, MPCM0);
     cbi(UCSR0A, U2X0);
 }
 
-struct cbuf {
-    uint8_t buf[BUF_LEN],
-    uint8_t *head = buf,
-    uint8_t tail,
-};
-struct cbuf recvbuf= {
-    .head = buf,
-    .tail = ((uint8_t *)(&buf + 1))[-1],
-};
-struct cbuf sendbuf= {
-    .head = buf,
-    .tail = ((uint8_t *)(&buf + 1))[-1],
-};
-
 ISR(USART_RX_vect) {
-    uint8_t data = UDR0;
-    writebuf(&recvbuf, data);
+    unsigned char data = UDR0;
+    writeBuffer(&recvbuf, data);
 }
 
 ISR(USART_UDRE_vect) {
-    if (readbuf(&sendbuf, &data)) {
-	UDR0 = data;
+    unsigned char data;
+    if (readBuffer(&sendbuf, &data) == BUFFER_OK) {
+        UDR0 = data;
     } else {
-	cbi(UCSR0A, UDRIE0);
+        cbi(UCSR0B, UDRIE0);
     }
 }
 
@@ -429,9 +409,9 @@ void startSerial() {
     sbi(UCSR0B, TXEN0);
     sbi(UCSR0B, RXEN0);
     // enable interrupts
-    sbi(UCSR0B, TXCIE0);
-    // sbi(UCSR0B, RXCIE0);
-    sbi(UCSR0B, UDRIE0); // data reg empty interrupt
+    cbi(UCSR0B, TXCIE0);
+    sbi(UCSR0B, RXCIE0);
+    sbi(UCSR0B, UDRIE0);  // data reg empty interrupt
 }
 
 /*
@@ -728,7 +708,6 @@ void setup() {
     enablePullups();
     initializeState();
     sei();
-    forward(0, 70);
 }
 
 void handlePacket(TPacket* packet) {
@@ -813,6 +792,7 @@ void loop() {
 int main() {
     setup();
     while (1) {
+        // writeSerial("please", 7);
         loop();
     }
 }
