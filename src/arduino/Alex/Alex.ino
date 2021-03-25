@@ -589,11 +589,12 @@ void printTicks() {
       stop();
       break;
       case COMMAND_GET_STATS:
+      sendOK();
       sendStatus();
       break;
       case COMMAND_CLEAR_STATS:
-      clearOneCounter(command -> params[0]);
       sendOK();
+      clearOneCounter(command -> params[0]);
       break;
       default:
       sendBadCommand();
@@ -709,7 +710,7 @@ void printTicks() {
   {
     if(dir==FORWARD)
     {
-      if(forwardDist > newDist)
+      if(forwardDist >= newDist)
       {
         deltaDist=0;
         newDist=0;
@@ -763,7 +764,4 @@ void printTicks() {
            stop();
          }
     }
-
-
-
 }
