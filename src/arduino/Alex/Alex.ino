@@ -278,12 +278,12 @@ void printTicks() {
 
   ISR(INT0_vect) {
     leftISR();
-    printTicks();
+    //printTicks(); //DONT EVER UNCOMMENT THIS LINE
   }
 
   ISR(INT1_vect) {
     rightISR();
-    //printTicks();
+    //printTicks();//DONT EVER UNCOMMENT THIS LINE
   }
 
   // Implement INT0 and INT1 ISRs above.
