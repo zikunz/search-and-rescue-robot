@@ -30,7 +30,7 @@ void exitAtomic(volatile unsigned char csreg) {
 // Initialize the buffer. We must call this before using writeBuffer or
 // readBuffer. PRE:
 //		Buffer to use is specified in "buffer", size of buffer in
-//characters is specified in "size"
+// characters is specified in "size"
 // POST:
 //		Buffer is initialized to accept up to "size" characters.
 void initBuffer(volatile TBuffer* buffer, unsigned int size) {
@@ -44,12 +44,14 @@ void initBuffer(volatile TBuffer* buffer, unsigned int size) {
 // Write to the buffer.
 // PRE:
 //		Buffer specified in "buffer" argument must be initialized using
-//initBuffer. "data" is character to 		write to buffer.
+// initBuffer. "data" is character to 		write to buffer.
 // POST:
-//		"data" is written to "buffer" and writeBuffer returns BUFFER_OK if
-//space is available. 		"data" is discarded and writeBuffer returns BUFFER_FULL if
-//space is not available. 		"data" is discarded and writeBuffer returns
-//BUFFER_INVALID if "buffer" was not initialized using initBuffer.
+//		"data" is written to "buffer" and writeBuffer returns BUFFER_OK
+//if
+// space is available. 		"data" is discarded and writeBuffer returns
+// BUFFER_FULL if space is not available. 		"data" is discarded and
+// writeBuffer returns BUFFER_INVALID if "buffer" was not initialized using
+// initBuffer.
 
 TBufferResult writeBuffer(volatile TBuffer* buffer, unsigned char data) {
     enterAtomic(&buffer->csreg);
@@ -74,14 +76,16 @@ TBufferResult writeBuffer(volatile TBuffer* buffer, unsigned char data) {
 // Read from the buffer.
 // PRE:
 //		Buffer specified in "buffer" argument must be initialized using
-//initBuffer. "data" is a pointer 		to a variable of type unsigned char.
+// initBuffer. "data" is a pointer 		to a variable of type unsigned
+// char.
 // POST:
-//		Variable pointed to by "data" contains character read from head of
-//the queue, and readBuffer returns 		BUFFER_OK if data is available for reading.
-//		Variable pointed to by "data" is unmodified, and readBuffer
-//returns BUFFER_EMTPY if no data is available. 		Variable pointed to by "data" is
-//unmodified, and readBuffer returns BUFFER_INVALID if "buffer" was 		not
-//initialized using initBuffer.
+//		Variable pointed to by "data" contains character read from head
+//of
+// the queue, and readBuffer returns 		BUFFER_OK if data is available
+// for reading. 		Variable pointed to by "data" is unmodified, and readBuffer
+// returns BUFFER_EMTPY if no data is available. 		Variable pointed to
+// by "data" is unmodified, and readBuffer returns BUFFER_INVALID if "buffer" was
+// not initialized using initBuffer.
 
 TBufferResult readBuffer(volatile TBuffer* buffer, unsigned char* data) {
     enterAtomic(&buffer->csreg);

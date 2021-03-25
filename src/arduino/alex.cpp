@@ -26,44 +26,53 @@
 
 volatile TBuffer sendbuf, recvbuf;
 
-const uint8_t digital_pin_to_timer_PGM[] = {
-    NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, TIMER2B,      NOT_ON_TIMER,
-    TIMER0B,      TIMER0A,      NOT_ON_TIMER, NOT_ON_TIMER, TIMER1A,
-    TIMER1B,      TIMER2A,      NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER,
-    NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER, NOT_ON_TIMER,
-};
-
-void analogWrite(uint8_t pin, int val) {
-    switch (digital_pin_to_timer_PGM[pin]) {
-        case TIMER0A:
-            sbi(TCCR0A, COM0A1);
-            OCR0A = val;
+void pwmWrite(uint8_t pin, int val) {
+    volatile uint8_t* timer_reg;
+    int timer_pos;
+    volatile uint8_t* timer_comp;
+    volatile uint8_t* port_reg;
+    int pin_pos;
+    switch (pin) {
+        case 5:
+            timer_reg = &TCCR0A;
+            timer_pos = COM0B1;
+            timer_comp = &OCR0B;
+            port_reg = &PORTD;
+            pin_pos = 5;
             break;
-        case TIMER0B:
-            sbi(TCCR0A, COM0B1);
-            OCR0B = val;
+        case 6:
+            timer_reg = &TCCR0A;
+            timer_pos = COM0A1;
+            timer_comp = &OCR0A;
+            port_reg = &PORTD;
+            pin_pos = 6;
             break;
-
-        case TIMER1A:
-            sbi(TCCR1A, COM1A1);
-            OCR1A = val;
+        case 9:
+            timer_reg = &TCCR1A;
+            timer_pos = COM1A1;
+            timer_comp = &OCR1A;
+            port_reg = &PORTB;
+            pin_pos = 1;
             break;
-
-        case TIMER1B:
-            sbi(TCCR1A, COM1B1);
-            OCR1B = val;
-            break;
-
-        case TIMER2A:
-            sbi(TCCR2A, COM2A1);
-            OCR2A = val;
-            break;
-
-        case TIMER2B:
-            sbi(TCCR2A, COM2B1);
-            OCR2B = val;
+        case 10:
+            timer_reg = &TCCR1A;
+            timer_pos = COM1B1;
+            timer_comp = &OCR1B;
+            port_reg = &PORTB;
+            pin_pos = 2;
             break;
     }
+    cbi(timer_reg, timer_pos);  // disable PWM
+    if (val == 0) {
+        cbi(port_reg, pin_pos);
+        return;
+    }
+    if (val == 255) {
+        sbi(port_reg, pin_pos);
+        return;
+    }
+    sbi(timer_reg, timer_pos);
+    *timer_comp = val;
 }
 
 typedef enum {
@@ -478,10 +487,10 @@ void forward(float dist, float speed) {
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
 
-    analogWrite(LF, val);
-    analogWrite(RF, val);
-    analogWrite(LR, 0);
-    analogWrite(RR, 0);
+    pwmWrite(LF, val);
+    pwmWrite(RF, val);
+    pwmWrite(LR, 0);
+    pwmWrite(RR, 0);
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -510,10 +519,10 @@ void reverse(float dist, float speed) {
     // LF = Left forward pin, LR = Left reverse pin
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
-    analogWrite(LR, val);
-    analogWrite(RR, val);
-    analogWrite(LF, 0);
-    analogWrite(RF, 0);
+    pwmWrite(LR, val);
+    pwmWrite(RR, val);
+    pwmWrite(LF, 0);
+    pwmWrite(RF, 0);
 }
 // New function to estimate number of wheel leftTicks
 // needed to turn an angle
@@ -554,10 +563,10 @@ void left(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn left we reverse the left wheel and move
     // the right wheel forward.
-    analogWrite(LR, val);
-    analogWrite(RF, val);
-    analogWrite(LF, 0);
-    analogWrite(RR, 0);
+    pwmWrite(LR, val);
+    pwmWrite(RF, val);
+    pwmWrite(LF, 0);
+    pwmWrite(RR, 0);
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -582,19 +591,19 @@ void right(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn right we reverse the right wheel and move
     // the left wheel forward.
-    analogWrite(RR, val);
-    analogWrite(LF, val);
-    analogWrite(LR, 0);
-    analogWrite(RF, 0);
+    pwmWrite(RR, val);
+    pwmWrite(LF, val);
+    pwmWrite(LR, 0);
+    pwmWrite(RF, 0);
 }
 
 // Stop Alex. To replace with bare-metal code later.
 void stop() {
     dbprint("Stop");
-    analogWrite(LF, 0);
-    analogWrite(LR, 0);
-    analogWrite(RF, 0);
-    analogWrite(RR, 0);
+    pwmWrite(LF, 0);
+    pwmWrite(LR, 0);
+    pwmWrite(RF, 0);
+    pwmWrite(RR, 0);
 }
 
 /*
@@ -655,7 +664,7 @@ void handleCommand(TPacket* command) {
             stop();
             break;
         case COMMAND_GET_STATS:
-	    sendOK();
+            sendOK();
             sendStatus();
             break;
         case COMMAND_CLEAR_STATS:
