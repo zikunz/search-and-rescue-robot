@@ -710,7 +710,7 @@ void printTicks() {
   {
     if(dir==FORWARD)
     {
-      if(forwardDist > newDist)
+      if(forwardDist >= newDist)
       {
         deltaDist=0;
         newDist=0;
@@ -719,7 +719,7 @@ void printTicks() {
     }
     else if(dir == BACKWARD)
     {
-      if(reverseDist > newDist)
+      if(reverseDist >= newDist)
       {
         deltaDist=0;
         newDist=0;
