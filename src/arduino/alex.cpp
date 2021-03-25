@@ -16,7 +16,7 @@
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #define NOT_ON_TIMER 0
-#define BUF_LEN 256
+#define BUF_LEN 512
 #define TIMER0A 1
 #define TIMER0B 2
 #define TIMER1A 3
@@ -83,7 +83,7 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the
 // wheel encoder.
 
-#define COUNTS_PER_REV 28
+#define COUNTS_PER_REV 200
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled
@@ -655,11 +655,12 @@ void handleCommand(TPacket* command) {
             stop();
             break;
         case COMMAND_GET_STATS:
+	    sendOK();
             sendStatus();
             break;
         case COMMAND_CLEAR_STATS:
-            clearOneCounter(command->params[0]);
             sendOK();
+            clearOneCounter(command->params[0]);
             break;
         default:
             sendBadCommand();
@@ -750,13 +751,13 @@ void loop() {
 
     if (deltaDist > 0) {
         if (dir == FORWARD) {
-            if (forwardDist > newDist) {
+            if (forwardDist >= newDist) {
                 deltaDist = 0;
                 newDist = 0;
                 stop();
             }
         } else if (dir == BACKWARD) {
-            if (reverseDist > newDist) {
+            if (reverseDist >= newDist) {
                 deltaDist = 0;
                 newDist = 0;
                 stop();
