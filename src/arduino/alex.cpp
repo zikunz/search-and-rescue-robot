@@ -15,65 +15,9 @@
 
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#define NOT_ON_TIMER 0
 #define BUF_LEN 512
-#define TIMER0A 1
-#define TIMER0B 2
-#define TIMER1A 3
-#define TIMER1B 4
-#define TIMER2A 6
-#define TIMER2B 7
 
 volatile TBuffer sendbuf, recvbuf;
-
-void pwmWrite(uint8_t pin, int val) {
-    volatile uint8_t* timer_reg;
-    int timer_pos;
-    volatile uint8_t* timer_comp;
-    volatile uint8_t* port_reg;
-    int pin_pos;
-    switch (pin) {
-        case 5:
-            timer_reg = &TCCR0A;
-            timer_pos = COM0B1;
-            timer_comp = &OCR0B;
-            port_reg = &PORTD;
-            pin_pos = 5;
-            break;
-        case 6:
-            timer_reg = &TCCR0A;
-            timer_pos = COM0A1;
-            timer_comp = &OCR0A;
-            port_reg = &PORTD;
-            pin_pos = 6;
-            break;
-        case 9:
-            timer_reg = &TCCR1A;
-            timer_pos = COM1A1;
-            timer_comp = &OCR1A;
-            port_reg = &PORTB;
-            pin_pos = 1;
-            break;
-        case 10:
-            timer_reg = &TCCR1A;
-            timer_pos = COM1B1;
-            timer_comp = &OCR1B;
-            port_reg = &PORTB;
-            pin_pos = 2;
-            break;
-    }
-    cbi(timer_reg, timer_pos);  // disable PWM
-    if (val == 0) {
-        cbi(port_reg, pin_pos);
-        return;
-    }
-    if (val == 255) {
-        sbi(port_reg, pin_pos);
-        return;
-    }
-    sbi(timer_reg, timer_pos);
-    *timer_comp = val;
-}
 
 typedef enum {
     STOP = 0,
@@ -146,6 +90,26 @@ volatile unsigned long newDist = 0;
 // Variables to keep track of our turning angle
 volatile unsigned long deltaTicks = 0;
 volatile unsigned long targetTicks = 0;
+
+void pwmWrite(uint8_t pin, int val) {
+    volatile uint8_t* timer_comp;
+    switch (pin) {
+        case LF:
+            timer_comp = &OCR0B;
+            break;
+        case LR:
+            timer_comp = &OCR0A;
+            break;
+	// FIXME reconnect wires
+        case RF:
+            timer_comp = &OCR2A;
+            break;
+        case RR:
+            timer_comp = &OCR2B;
+            break;
+    }
+    *timer_comp = val;
+}
 
 // Read the serial port. Returns the read character in
 // ch if available. Also returns TRUE if ch is valid.
@@ -420,7 +384,7 @@ void startSerial() {
     // enable interrupts
     cbi(UCSR0B, TXCIE0);
     sbi(UCSR0B, RXCIE0);
-    sbi(UCSR0B, UDRIE0);  // data reg empty interrupt
+    cbi(UCSR0B, UDRIE0);  // data reg empty interrupt
 }
 
 /*
@@ -432,8 +396,27 @@ void startSerial() {
 // later you will replace it with code to set up the PWMs
 // to drive the motors.
 void setupMotors() {
+    // set as output
     DDRB |= 0b110;
     DDRD |= 0b110000;
+    // No prescaling, max freq
+    sbi(TCCR0B, CS00);
+    cbi(TCCR0B, CS01);
+    cbi(TCCR0B, CS02);
+    sbi(TCCR2B, CS00);
+    cbi(TCCR2B, CS01);
+    cbi(TCCR2B, CS02);
+    // initialise counter
+    TCNT0 = 0;
+    TCNT2 = 0;
+    // phase correct
+    sbi(TCCR0A, WGM00);
+    cbi(TCCR0A, WGM01);
+    cbi(TCCR0B, WGM02);
+    sbi(TCCR2A, WGM00);
+    cbi(TCCR2A, WGM01);
+    cbi(TCCR2B, WGM02);
+    // FIXME reconnect wires
     /* Our motor set up is:
      *    A1IN - Pin 5, PD5, OC0B
      *    A2IN - Pin 6, PD6, OC0A
@@ -445,7 +428,17 @@ void setupMotors() {
 // Start the PWM for Alex's motors.
 // We will implement this later. For now it is
 // blank.
-void startMotors() {}
+void startMotors() {
+    // clear on compare, non-inverted
+    cbi(TCCR0A, COM0A0);
+    sbi(TCCR0A, COM0A1);
+    cbi(TCCR0A, COM0B0);
+    sbi(TCCR0A, COM0B1);
+    cbi(TCCR2A, COM0A0);
+    sbi(TCCR2A, COM0A1);
+    cbi(TCCR2A, COM0B0);
+    sbi(TCCR2A, COM0B1);
+}
 
 // Convert percentages to PWM values
 int pwmVal(float speed) {
