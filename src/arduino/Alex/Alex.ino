@@ -38,6 +38,16 @@ volatile TDirection dir = STOP;
 #define ALEX_LENGTH         16   //alex length
 #define ALEX_BREADTH        6   //alex breath
 
+// For colour sensor pins
+#define s0 0
+#define s1 1
+#define s2 4
+#define s3 7
+#define out 8
+
+// For colour sensor initial RGB values
+int Red = 0, Blue = 0, Green = 0;
+
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
 float alexDiagonal = 0.0;
@@ -141,6 +151,7 @@ void sendMessage(const char *message)
 void dbprint(const char *format, ...) {
   va_list args;
   char buffer[128];
+
   va_start(args, format);
   vsprintf(buffer, format, args);
   sendMessage(buffer);
@@ -270,6 +281,15 @@ void setupEINT()
   EIMSK |= 0b11;
   EICRA = 0b1010;
   sei();
+}
+
+// Set up colour sensor pins
+// Arduino pins 0, 1, 4 and 7 should be output
+// and Arduino pins 8 should be input
+void setupColourSensor()
+{
+  DDRD |= 0b10010011;
+  DDRB &= 0b0;
 }
 
 // Implement the external interrupt ISRs below.
@@ -651,6 +671,7 @@ void setup() {
   startMotors();
   enablePullups();
   initializeState();
+  setupColourSensor();
   sei();
 }
 
@@ -676,8 +697,47 @@ void handlePacket(TPacket *packet)
   }
 }
 
-void loop() {
+void getColours() {
+  // S2/S3 levels define which set of photodiodes we are using LOW/LOW is for RED LOW/HIGH is for Blue and HIGH/HIGH is for green
+  PORTD &= 0b00;
+  // Here we wait until "out" go LOW, we start measuring the duration and stops when "out" is HIGH again, if you have trouble with this expression check the bottom of the code
+  Red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
 
+  PORTD |= 0b10000000;
+  Blue = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
+
+  PORTD |= 00010000;
+  Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
+}
+
+void decideColour()
+{
+  if (Red <= 15 && Green <= 15 && Blue <= 15)      //If the values are low it's likely the white color (all the colors are present)
+    dbprint("White\n");
+  else if (Red < Blue && Red <= Green && Red < 22 && Green > 35) //if Red value is the lowest one and smaller thant 23 it's likely Red
+    dbprint("Red\n");
+  else if (Blue < Green && Blue < Red && Blue < 20) //Same thing for Blue
+    dbprint("Blue\n");
+  else if (Green < Red && Green - Blue <= 8)      //Green it was a little tricky, you can do it using the same method as above (the lowest), but here I used a reflective object
+    dbprint("Green\n");                    //which means the blue value is very low too, so I decided to check the difference between green and blue and see if it's acceptable
+  else if (Green && Blue >= 30 && Green >= 38)
+    dbprint("Black\n");
+  else
+    dbprint("Unknown\n");                  //if the color is not recognized, you can add as many as you want
+
+  delay(200);                                   //0.2s delay you can modify if you want
+}
+
+void loop() {
+  // Putting S0/S1 on HIGH/HIGH levels means the output frequency scalling is at 100%
+  // LOW/LOW is off HIGH/LOW is 20% and LOW/HIGH is  2%
+  PORTD |= 0b11;
+
+  getColours();
+  decideColour();
   // Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 2
 
   // forward(0, 100);
