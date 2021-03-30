@@ -201,8 +201,8 @@ void sendCommand(char command)
 		case 'a':
 		case 'A':
 			//getParams(&commandPacket);
-			commandPacket.params[0] = 30;
-			commandPacket.params[1] = 60;
+			commandPacket.params[0] = 40;
+			commandPacket.params[1] = 75;
 			commandPacket.command = COMMAND_TURN_LEFT;
 			sendPacket(&commandPacket);
 			break;
@@ -210,8 +210,8 @@ void sendCommand(char command)
 		case 'd':
 		case 'D':
 			//getParams(&commandPacket);
-			commandPacket.params[0] = 30;
-			commandPacket.params[1] = 60;
+			commandPacket.params[0] = 40;
+			commandPacket.params[1] = 75;
 			commandPacket.command = COMMAND_TURN_RIGHT;
 			sendPacket(&commandPacket);
 			break;
