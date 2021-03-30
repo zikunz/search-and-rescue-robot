@@ -31,10 +31,10 @@ volatile TDirection dir = STOP;
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
-#define LF                  6   // Left forward pin
-#define LR                  5   // Left reverse pin
-#define RF                  10  // Right forward pin
-#define RR                  9   // Right reverse pin
+#define LF                  5   // Left forward pin
+#define LR                  6   // Left reverse pin
+#define RF                  9  // Right forward pin
+#define RR                  10   // Right reverse pin
 #define ALEX_LENGTH         16   //alex length
 #define ALEX_BREADTH        6   //alex breath
 
@@ -422,7 +422,7 @@ void forward(float dist, float speed)
   // This will be replaced later with bare-metal code.
 
   analogWrite(LF, val);
-  analogWrite(RF, val);
+  analogWrite(RF, val -50);
   analogWrite(LR, 0);
   analogWrite(RR, 0);
 }
@@ -454,7 +454,7 @@ void reverse(float dist, float speed)
   // RF = Right forward pin, RR = Right reverse pin
   // This will be replaced later with bare-metal code.
   analogWrite(LR, val);
-  analogWrite(RR, val);
+  analogWrite(RR, val - 50);
   analogWrite(LF, 0);
   analogWrite(RF, 0);
 }
@@ -503,7 +503,7 @@ void left(float ang, float speed)
   // To turn left we reverse the left wheel and move
   // the right wheel forward.
   analogWrite(LR, val);
-  analogWrite(RF, val);
+  analogWrite(RF, val -50);
   analogWrite(LF, 0);
   analogWrite(RR, 0);
 }
@@ -532,7 +532,7 @@ void right(float ang, float speed)
   // We will also replace this code with bare-metal later.
   // To turn right we reverse the right wheel and move
   // the left wheel forward.
-  analogWrite(RR, val);
+  analogWrite(RR, val - 50);
   analogWrite(LF, val);
   analogWrite(LR, 0);
   analogWrite(RF, 0);
@@ -795,7 +795,7 @@ void loop() {
   {
     if (dir == LEFT)
     {
-      if (leftForwardTicksTurns >= targetTicks)
+      if (leftReverseTicksTurns >= targetTicks)
       {
         deltaTicks = 0;
         targetTicks = 0;
