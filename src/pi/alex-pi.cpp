@@ -180,30 +180,38 @@ void sendCommand(char command)
 
 	switch(command)
 	{
-		case 'f':
-		case 'F':
-			getParams(&commandPacket);
+		case 'w':
+		case 'W':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 60;
 			commandPacket.command = COMMAND_FORWARD;
 			sendPacket(&commandPacket);
 			break;
 
-		case 'b':
-		case 'B':
-			getParams(&commandPacket);
+		case 's':
+		case 'S':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 60;
 			commandPacket.command = COMMAND_REVERSE;
 			sendPacket(&commandPacket);
 			break;
 
-		case 'l':
-		case 'L':
-			getParams(&commandPacket);
+		case 'a':
+		case 'A':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 60;
 			commandPacket.command = COMMAND_TURN_LEFT;
 			sendPacket(&commandPacket);
 			break;
 
-		case 'r':
-		case 'R':
-			getParams(&commandPacket);
+		case 'd':
+		case 'D':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 60;
 			commandPacket.command = COMMAND_TURN_RIGHT;
 			sendPacket(&commandPacket);
 			break;
@@ -262,7 +270,7 @@ int main()
 	while(!exitFlag)
 	{
 		char ch;
-		printf("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats q=exit)\n");
+		printf("Command (w=forward, s=reverse, a=turn left, d=turn right, s=stop, c=clear stats, g=get stats q=exit)\n");
 		scanf("%c", &ch);
 
 		// Purge extraneous characters from input stream
