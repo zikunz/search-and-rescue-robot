@@ -216,8 +216,8 @@ void sendCommand(char command)
 			sendPacket(&commandPacket);
 			break;
 
-		case 's':
-		case 'S':
+		case 'e':
+		case 'E':
 			commandPacket.command = COMMAND_STOP;
 			sendPacket(&commandPacket);
 			break;
