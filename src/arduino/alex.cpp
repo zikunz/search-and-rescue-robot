@@ -100,13 +100,14 @@ void pwmWrite(uint8_t pin, int val) {
         case LR:
             timer_comp = &OCR0A;
             break;
-	// FIXME reconnect wires
         case RF:
-            timer_comp = &OCR2A;
+            timer_comp = &OCR1AL;
             break;
         case RR:
-            timer_comp = &OCR2B;
+            timer_comp = &OCR1BL;
             break;
+		default:
+			return;
     }
     *timer_comp = val;
 }
@@ -403,25 +404,32 @@ void setupMotors() {
     sbi(TCCR0B, CS00);
     cbi(TCCR0B, CS01);
     cbi(TCCR0B, CS02);
-    sbi(TCCR2B, CS00);
-    cbi(TCCR2B, CS01);
-    cbi(TCCR2B, CS02);
+    sbi(TCCR1B, CS10);
+    cbi(TCCR1B, CS11);
+    cbi(TCCR1B, CS12);
     // initialise counter
     TCNT0 = 0;
-    TCNT2 = 0;
+    TCNT1L = 0;
+    TCNT1H = 0;
+	OCR0A = 0;
+	OCR0B = 0;
+	OCR1AL = 0;
+	OCR1AH = 0;
+	OCR1BL = 0;
+	OCR1BH = 0;
     // phase correct
     sbi(TCCR0A, WGM00);
     cbi(TCCR0A, WGM01);
     cbi(TCCR0B, WGM02);
-    sbi(TCCR2A, WGM00);
-    cbi(TCCR2A, WGM01);
-    cbi(TCCR2B, WGM02);
-    // FIXME reconnect wires
+    sbi(TCCR1A, WGM10);
+    cbi(TCCR1A, WGM11);
+    cbi(TCCR1B, WGM12);
+    cbi(TCCR1B, WGM13);
     /* Our motor set up is:
      *    A1IN - Pin 5, PD5, OC0B
      *    A2IN - Pin 6, PD6, OC0A
-     *    B1IN - Pin 10, PB2, OC1B
-     *    B2In - pIN 11, PB3, OC2A
+     *    B1IN - Pin 9, PB1, OC1A
+     *    B2IN - Pin 10, PB2, OC1B
      */
 }
 
@@ -434,10 +442,10 @@ void startMotors() {
     sbi(TCCR0A, COM0A1);
     cbi(TCCR0A, COM0B0);
     sbi(TCCR0A, COM0B1);
-    cbi(TCCR2A, COM0A0);
-    sbi(TCCR2A, COM0A1);
-    cbi(TCCR2A, COM0B0);
-    sbi(TCCR2A, COM0B1);
+    cbi(TCCR1A, COM1A0);
+    sbi(TCCR1A, COM1A1);
+    cbi(TCCR1A, COM1B0);
+    sbi(TCCR1A, COM1B1);
 }
 
 // Convert percentages to PWM values
