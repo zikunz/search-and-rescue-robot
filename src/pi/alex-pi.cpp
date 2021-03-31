@@ -8,6 +8,7 @@
 #include "../common/serialize.h"
 #include "serial.h"
 
+//#define PORT_NAME			"/dev/ttyACM0"
 #define BAUD_RATE B9600
 
 int exitFlag = 0;
@@ -163,39 +164,47 @@ void sendCommand(char command) {
     commandPacket.packetType = PACKET_TYPE_COMMAND;
 
     switch (command) {
-        case 'f':
-        case 'F':
-            getParams(&commandPacket);
-            commandPacket.command = COMMAND_FORWARD;
-            sendPacket(&commandPacket);
-            break;
+        case 'w':
+		case 'W':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 20;
+			commandPacket.params[1] = 60;
+			commandPacket.command = COMMAND_FORWARD;
+			sendPacket(&commandPacket);
+			break;
 
-        case 'b':
-        case 'B':
-            getParams(&commandPacket);
-            commandPacket.command = COMMAND_REVERSE;
-            sendPacket(&commandPacket);
-            break;
+		case 's':
+		case 'S':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 20;
+			commandPacket.params[1] = 60;
+			commandPacket.command = COMMAND_REVERSE;
+			sendPacket(&commandPacket);
+			break;
 
-        case 'l':
-        case 'L':
-            getParams(&commandPacket);
-            commandPacket.command = COMMAND_TURN_LEFT;
-            sendPacket(&commandPacket);
-            break;
+		case 'a':
+		case 'A':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 69;
+			commandPacket.command = COMMAND_TURN_LEFT;
+			sendPacket(&commandPacket);
+			break;
 
-        case 'r':
-        case 'R':
-            getParams(&commandPacket);
-            commandPacket.command = COMMAND_TURN_RIGHT;
-            sendPacket(&commandPacket);
-            break;
+		case 'd':
+		case 'D':
+			//getParams(&commandPacket);
+			commandPacket.params[0] = 30;
+			commandPacket.params[1] = 69;
+			commandPacket.command = COMMAND_TURN_RIGHT;
+			sendPacket(&commandPacket);
+			break;
 
-        case 's':
-        case 'S':
-            commandPacket.command = COMMAND_STOP;
-            sendPacket(&commandPacket);
-            break;
+		case 'e':
+		case 'E':
+			commandPacket.command = COMMAND_STOP;
+			sendPacket(&commandPacket);
+			break;
 
         case 'c':
         case 'C':
@@ -214,7 +223,7 @@ void sendCommand(char command) {
         case 'Q':
             exitFlag = 1;
             break;
-
+		//ADD A CASE TO GET THE COLOR SENSOR DATA
         default:
             printf("Bad command\n");
     }
