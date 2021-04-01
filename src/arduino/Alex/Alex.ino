@@ -80,7 +80,10 @@ volatile unsigned long rightRevs;
 volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
 
-//Variables to keep track of whether we have moved a command distance//
+// Colour detected by the colour sensor
+int colour;
+
+// Variables to keep track of whether we have moved a command distance
 unsigned long deltaDist;
 unsigned long newDist;
 
@@ -130,9 +133,10 @@ void sendStatus()
   statusPacket.params[4] = leftForwardTicksTurns;
   statusPacket.params[5] = rightForwardTicksTurns;
   statusPacket.params[6] = leftReverseTicksTurns;
-  statusPacket.params[7] =  rightReverseTicksTurns;
+  statusPacket.params[7] = rightReverseTicksTurns;
   statusPacket.params[8] = forwardDist;
   statusPacket.params[9] = reverseDist;
+  statusPacket.params[10] = colour;
   sendResponse(&statusPacket);
 }
 
@@ -219,7 +223,6 @@ void sendResponse(TPacket *packet)
   writeSerial(buffer, len);
 }
 
-
 /*
   Setup and start codes for external interrupts and
   pullup resistors.
@@ -240,6 +243,7 @@ void enablePullups()
 void printTicks() {
   dbprint("%d, %d, %d, %d, %d, %d, %d, %d", leftForwardTicks, leftReverseTicks, leftForwardTicksTurns, leftReverseTicksTurns, rightForwardTicks, rightReverseTicks, rightForwardTicksTurns, rightReverseTicksTurns);
 }
+
 
 // Functions to be called by INT0 and INT1 ISRs.
 void leftISR() {
@@ -422,7 +426,7 @@ void forward(float dist, float speed)
   // This will be replaced later with bare-metal code.
 
   analogWrite(LF, val);
-  analogWrite(RF, val -50);
+  analogWrite(RF, val - 50);
   analogWrite(LR, 0);
   analogWrite(RR, 0);
 }
@@ -503,7 +507,7 @@ void left(float ang, float speed)
   // To turn left we reverse the left wheel and move
   // the right wheel forward.
   analogWrite(LR, val);
-  analogWrite(RF, val -50);
+  analogWrite(RF, val - 50);
   analogWrite(LF, 0);
   analogWrite(RR, 0);
 }
@@ -604,6 +608,11 @@ void handleCommand(TPacket *command)
       sendOK();
       right((float) command->params[0], (float) command->params[1]);
       break;
+    case COMMAND_SEND_COLOUR:
+      sendOK();
+      getColours();
+      decideAndSendColour();
+      break;
     case COMMAND_STOP:
       sendOK();
       stop();
@@ -677,6 +686,7 @@ void setup() {
 
 void handlePacket(TPacket *packet)
 {
+  TPacket colourPacket;
   switch (packet->packetType)
   {
     case PACKET_TYPE_COMMAND:
@@ -713,20 +723,28 @@ void getColours() {
   delay(20);
 }
 
-void decideColour()
+void decideAndSendColour()
 {
   if (Red <= 15 && Green <= 15 && Blue <= 15)      //If the values are low it's likely the white color (all the colors are present)
-    dbprint("White\n");
+    colour = 0; // strcpy(colour, "White");
   else if (Red < Blue && Red <= Green && Red < 22 && Green > 35) //if Red value is the lowest one and smaller thant 23 it's likely Red
-    dbprint("Red\n");
+    colour = 1; // strcpy(colour, "Red");
   else if (Blue < Green && Blue < Red && Blue < 20) //Same thing for Blue
-    dbprint("Blue\n");
-  else if (Green < Red && Green - Blue <= 8)      //Green it was a little tricky, you can do it using the same method as above (the lowest), but here I used a reflective object
-    dbprint("Green\n");                    //which means the blue value is very low too, so I decided to check the difference between green and blue and see if it's acceptable
+    colour = 2; // strcpy(colour, "Blue");
+  else if (Green < Red && Green - Blue <= 8)      //Green is a little tricky, you can do it using the same method as above (the lowest), but here I used a reflective object
+    colour = 3; // strcpy(colour, "Green");                   //which means the blue value is very low too, so I decided to check the difference between green and blue and see if it's acceptable
   else if (Green && Blue >= 30 && Green >= 38)
-    dbprint("Black\n");
+    colour = 4; // strcpy(colour, "Black");
   else
-    dbprint("Unknown\n");                  //if the color is not recognized, you can add as many as you want
+    colour = 5; // strcpy(colour, "Unknown");                  //if the color is not recognized, you can add as many as you want
+
+  char colourInString[100];
+  itoa(colour, colourInString, 10);
+  TPacket colourPacket;
+  colourPacket.command = PACKET_TYPE_COMMAND;
+  colourPacket.packetType = PACKET_TYPE_MESSAGE;
+  strncpy(colourPacket.data, colourInString, MAX_STR_LEN);
+  sendResponse(&colourPacket);
 
   delay(200);                                   //0.2s delay you can modify if you want
 }
@@ -736,8 +754,6 @@ void loop() {
   // LOW/LOW is off HIGH/LOW is 20% and LOW/HIGH is  2%
   PORTD |= 0b11;
 
-  getColours();
-  decideColour();
   // Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 2
 
   // forward(0, 100);
