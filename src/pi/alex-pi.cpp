@@ -44,6 +44,7 @@ void handleStatus(TPacket *packet)
 	printf("Right Reverse Ticks Turns:\t%d\n", packet->params[7]);
 	printf("Forward Distance:\t\t%d\n", packet->params[8]);
 	printf("Reverse Distance:\t\t%d\n", packet->params[9]);
+	printf("Colour:\t\t%s\n", packet->params[10]);
 	printf("\n---------------------------------------\n\n");
 }
 
@@ -115,6 +116,8 @@ void handlePacket(TPacket *packet)
 		case PACKET_TYPE_MESSAGE:
 				handleMessage(packet);
 			break;
+		case HANDLE_COLOUR_MESSAGE:
+				handleColourMessage(packet);
 	}
 }
 
