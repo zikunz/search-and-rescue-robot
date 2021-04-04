@@ -81,7 +81,7 @@ volatile unsigned long forwardDist;
 volatile unsigned long reverseDist;
 
 // Colour detected by the colour sensor
-int colour;
+volatile unsigned long colour;
 
 // Variables to keep track of whether we have moved a command distance
 unsigned long deltaDist;
@@ -738,13 +738,13 @@ void decideAndSendColour()
   else
     colour = 5; // strcpy(colour, "Unknown");                  //if the color is not recognized, you can add as many as you want
 
-  char colourInString[100];
-  itoa(colour, colourInString, 10);
-  TPacket colourPacket;
-  colourPacket.command = PACKET_TYPE_COMMAND;
-  colourPacket.packetType = PACKET_TYPE_MESSAGE;
-  strncpy(colourPacket.data, colourInString, MAX_STR_LEN);
-  sendResponse(&colourPacket);
+//  char colourInString[100];
+//  itoa(colour, colourInString, 10);
+//  TPacket colourPacket;
+//  colourPacket.command = PACKET_TYPE_COMMAND;
+//  colourPacket.packetType = PACKET_TYPE_MESSAGE;
+//  strncpy(colourPacket.data, colourInString, MAX_STR_LEN);
+//  sendResponse(&colourPacket);
 
   delay(200);                                   //0.2s delay you can modify if you want
 }
