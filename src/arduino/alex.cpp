@@ -46,8 +46,8 @@ volatile TDirection dir = STOP;
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
-#define LF 6            // Left forward pin
-#define LR 5            // Left reverse pin
+#define LF 5            // Left forward pin
+#define LR 6            // Left reverse pin
 #define RF 10           // Right forward pin
 #define RR 9            // Right reverse pin
 #define ALEX_LENGTH 16  // alex length
@@ -399,7 +399,7 @@ void startSerial() {
 void setupMotors() {
     // set as output
     DDRB |= 0b110;
-    DDRD |= 0b110000;
+    DDRD |= 0b1100000;
     // No prescaling, max freq
     sbi(TCCR0B, CS00);
     cbi(TCCR0B, CS01);
@@ -781,7 +781,7 @@ void loop() {
 
     if (deltaTicks > 0) {
         if (dir == LEFT) {
-            if (leftForwardTicksTurns >= targetTicks) {
+            if (leftReverseTicksTurns >= targetTicks) {
                 deltaTicks = 0;
                 targetTicks = 0;
                 stop();
