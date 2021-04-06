@@ -267,13 +267,6 @@ void enablePullups() {
     // We set bits 2 and 3 in DDRD to 0 to make them inputs.
 }
 
-void printTicks() {
-    dbprint("%d, %d, %d, %d, %d, %d, %d, %d", leftForwardTicks,
-            leftReverseTicks, leftForwardTicksTurns, leftReverseTicksTurns,
-            rightForwardTicks, rightReverseTicks, rightForwardTicksTurns,
-            rightReverseTicksTurns);
-}
-
 // Functions to be called by INT0 and INT1 ISRs.
 void leftISR() {
     if (dir == FORWARD) {
@@ -478,7 +471,6 @@ void forward(float dist, float speed) {
 
     dir = FORWARD;
     int val = pwmVal(speed);
-    dbprint("%d", val);
 
     // For now we will ignore dist and move
     // forward indefinitely. We will fix this
@@ -488,7 +480,7 @@ void forward(float dist, float speed) {
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
 
-    pwmWrite(LF, val);
+    pwmWrite(LF, val - 15);
     pwmWrite(RF, val);
     pwmWrite(LR, 0);
     pwmWrite(RR, 0);
@@ -520,7 +512,7 @@ void reverse(float dist, float speed) {
     // LF = Left forward pin, LR = Left reverse pin
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
-    pwmWrite(LR, val);
+    pwmWrite(LR, val - 15);
     pwmWrite(RR, val);
     pwmWrite(LF, 0);
     pwmWrite(RF, 0);
@@ -564,7 +556,7 @@ void left(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn left we reverse the left wheel and move
     // the right wheel forward.
-    pwmWrite(LR, val);
+    pwmWrite(LR, val - 15);
     pwmWrite(RF, val);
     pwmWrite(LF, 0);
     pwmWrite(RR, 0);
@@ -593,14 +585,13 @@ void right(float ang, float speed) {
     // To turn right we reverse the right wheel and move
     // the left wheel forward.
     pwmWrite(RR, val);
-    pwmWrite(LF, val);
+    pwmWrite(LF, val - 15);
     pwmWrite(LR, 0);
     pwmWrite(RF, 0);
 }
 
 // Stop Alex. To replace with bare-metal code later.
 void stop() {
-    dbprint("Stop");
     pwmWrite(LF, 0);
     pwmWrite(LR, 0);
     pwmWrite(RF, 0);
@@ -645,7 +636,6 @@ void handleCommand(TPacket* command) {
         // For movement commands, param[0] = distance, param[1] = speed.
         case COMMAND_FORWARD:
             sendOK();
-            dbprint("%lu,%lu", command->params[0], command->params[1]);
             forward((float)command->params[0], (float)command->params[1]);
             break;
         case COMMAND_REVERSE:
@@ -800,6 +790,7 @@ void loop() {
     }
 }
 
+#ifndef ARDUINO
 int main() {
     setup();
     while (1) {
@@ -807,3 +798,4 @@ int main() {
         loop();
     }
 }
+#endif

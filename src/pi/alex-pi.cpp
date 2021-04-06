@@ -165,46 +165,46 @@ void sendCommand(char command) {
 
     switch (command) {
         case 'w':
-		case 'W':
-			//getParams(&commandPacket);
-			commandPacket.params[0] = 30;
-			commandPacket.params[1] = 70;
-			commandPacket.command = COMMAND_FORWARD;
-			sendPacket(&commandPacket);
-			break;
+        case 'W':
+            // getParams(&commandPacket);
+            commandPacket.params[0] = 30;
+            commandPacket.params[1] = 70;
+            commandPacket.command = COMMAND_FORWARD;
+            sendPacket(&commandPacket);
+            break;
 
-		case 's':
-		case 'S':
-			//getParams(&commandPacket);
-			commandPacket.params[0] = 30;
-			commandPacket.params[1] = 70;
-			commandPacket.command = COMMAND_REVERSE;
-			sendPacket(&commandPacket);
-			break;
+        case 's':
+        case 'S':
+            // getParams(&commandPacket);
+            commandPacket.params[0] = 30;
+            commandPacket.params[1] = 70;
+            commandPacket.command = COMMAND_REVERSE;
+            sendPacket(&commandPacket);
+            break;
 
-		case 'a':
-		case 'A':
-			//getParams(&commandPacket);
-			commandPacket.params[0] = 60;
-			commandPacket.params[1] = 70;
-			commandPacket.command = COMMAND_TURN_LEFT;
-			sendPacket(&commandPacket);
-			break;
+        case 'a':
+        case 'A':
+            // getParams(&commandPacket);
+            commandPacket.params[0] = 60;
+            commandPacket.params[1] = 70;
+            commandPacket.command = COMMAND_TURN_LEFT;
+            sendPacket(&commandPacket);
+            break;
 
-		case 'd':
-		case 'D':
-			//getParams(&commandPacket);
-			commandPacket.params[0] = 60;
-			commandPacket.params[1] = 70;
-			commandPacket.command = COMMAND_TURN_RIGHT;
-			sendPacket(&commandPacket);
-			break;
+        case 'd':
+        case 'D':
+            // getParams(&commandPacket);
+            commandPacket.params[0] = 60;
+            commandPacket.params[1] = 70;
+            commandPacket.command = COMMAND_TURN_RIGHT;
+            sendPacket(&commandPacket);
+            break;
 
-		case 'e':
-		case 'E':
-			commandPacket.command = COMMAND_STOP;
-			sendPacket(&commandPacket);
-			break;
+        case 'e':
+        case 'E':
+            commandPacket.command = COMMAND_STOP;
+            sendPacket(&commandPacket);
+            break;
 
         case 'c':
         case 'C':
@@ -223,7 +223,7 @@ void sendCommand(char command) {
         case 'Q':
             exitFlag = 1;
             break;
-		//ADD A CASE TO GET THE COLOR SENSOR DATA
+            // ADD A CASE TO GET THE COLOR SENSOR DATA
         default:
             printf("Bad command\n");
     }
