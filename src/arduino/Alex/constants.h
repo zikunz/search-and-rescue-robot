@@ -25,7 +25,8 @@ typedef enum
   RESP_BAD_PACKET = 2,
   RESP_BAD_CHECKSUM = 3,
   RESP_BAD_COMMAND = 4,
-  RESP_BAD_RESPONSE = 5 
+  RESP_BAD_RESPONSE = 5,
+  RESP_COLOUR = 6
 } TResponseType;
 
 
