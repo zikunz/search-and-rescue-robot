@@ -165,37 +165,57 @@ void sendCommand(char command) {
 
     switch (command) {
         case 'w':
+			commandPacket.params[0] = 9;
+            commandPacket.params[1] = 75;
+            commandPacket.command = COMMAND_FORWARD;
+            sendPacket(&commandPacket);
+            break;
         case 'W':
             // getParams(&commandPacket);
-            commandPacket.params[0] = 30;
-            commandPacket.params[1] = 70;
+            commandPacket.params[0] = 11;
+            commandPacket.params[1] = 100;
             commandPacket.command = COMMAND_FORWARD;
             sendPacket(&commandPacket);
             break;
 
         case 's':
+			commandPacket.params[0] = 9;
+            commandPacket.params[1] = 75;
+            commandPacket.command = COMMAND_REVERSE;
+            sendPacket(&commandPacket);
+            break;
         case 'S':
             // getParams(&commandPacket);
-            commandPacket.params[0] = 30;
-            commandPacket.params[1] = 70;
+            commandPacket.params[0] = 11;
+            commandPacket.params[1] = 100;
             commandPacket.command = COMMAND_REVERSE;
             sendPacket(&commandPacket);
             break;
 
         case 'a':
+			commandPacket.params[0] = 15;
+            commandPacket.params[1] = 80;
+            commandPacket.command = COMMAND_TURN_LEFT;
+            sendPacket(&commandPacket);
+            break;
         case 'A':
             // getParams(&commandPacket);
-            commandPacket.params[0] = 60;
-            commandPacket.params[1] = 70;
+            commandPacket.params[0] = 15;
+            commandPacket.params[1] = 95;
             commandPacket.command = COMMAND_TURN_LEFT;
             sendPacket(&commandPacket);
             break;
 
         case 'd':
+			commandPacket.params[0] = 20;
+            commandPacket.params[1] = 95;
+            commandPacket.command = COMMAND_TURN_RIGHT;
+            sendPacket(&commandPacket);
+            break;
         case 'D':
             // getParams(&commandPacket);
-            commandPacket.params[0] = 60;
-            commandPacket.params[1] = 70;
+            commandPacket.params[0] = 20;
+            commandPacket.params[1] = 80;
             commandPacket.command = COMMAND_TURN_RIGHT;
             sendPacket(&commandPacket);
             break;
@@ -252,8 +272,8 @@ int main() {
     while (!exitFlag) {
         char ch;
         printf(
-            "Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, "
-            "c=clear stats, g=get stats q=exit)\n");
+            "Command (w=forward, s=reverse, a=turn left, d=turn right, e=stop, "
+            "c=clear stats, g=get stats q=exit, USE CAPITAL LETTERS FOR MORE POWER!!!!)\n");
         scanf("%c", &ch);
 
         // Purge extraneous characters from input stream
