@@ -46,7 +46,7 @@ volatile TDirection dir = STOP;
 #define out 8
 
 // For colour sensor initial RGB values
-int Red = 0, Blue = 0, Green = 0;
+volatile unsigned long Red = 0, Blue = 0, Green = 0;
 
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
@@ -136,7 +136,6 @@ void sendStatus()
   statusPacket.params[7] = rightReverseTicksTurns;
   statusPacket.params[8] = forwardDist;
   statusPacket.params[9] = reverseDist;
-  statusPacket.params[10] = colour;
   sendResponse(&statusPacket);
 }
 
@@ -293,7 +292,8 @@ void setupEINT()
 void setupColourSensor()
 {
   DDRD |= 0b10010011;
-  DDRB &= 0b0;
+  DDRB &= 0b11111110;
+  PORTD |= 0b00000011;
 }
 
 // Implement the external interrupt ISRs below.
@@ -462,6 +462,7 @@ void reverse(float dist, float speed)
   analogWrite(LF, 0);
   analogWrite(RF, 0);
 }
+
 //New function to estimate number of wheel leftTicks
 //needed to turn an angle
 unsigned long computeDeltaTicks(float ang)
@@ -610,8 +611,7 @@ void handleCommand(TPacket *command)
       break;
     case COMMAND_SEND_COLOUR:
       sendOK();
-      getColours();
-      decideAndSendColour();
+      colour();
       break;
     case COMMAND_STOP:
       sendOK();
@@ -686,7 +686,7 @@ void setup() {
 
 void handlePacket(TPacket *packet)
 {
-  TPacket colourPacket;
+  //TPacket colourPacket;
   switch (packet->packetType)
   {
     case PACKET_TYPE_COMMAND:
@@ -707,10 +707,10 @@ void handlePacket(TPacket *packet)
   }
 }
 
-void getColours() {
+void colour() {
   // S2/S3 levels define which set of photodiodes we are using LOW/LOW is for RED LOW/HIGH is for Blue and HIGH/HIGH is for green
-  PORTD &= 0b00;
   // Here we wait until "out" go LOW, we start measuring the duration and stops when "out" is HIGH again, if you have trouble with this expression check the bottom of the code
+  PORTD &= 0b01101111;
   Red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
   delay(20);
 
@@ -718,13 +718,10 @@ void getColours() {
   Blue = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
   delay(20);
 
-  PORTD |= 00010000;
+  PORTD |= 0b00010000;
   Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
   delay(20);
-}
 
-void decideAndSendColour()
-{
   if (Red <= 15 && Green <= 15 && Blue <= 15)      //If the values are low it's likely the white color (all the colors are present)
     colour = 0; // strcpy(colour, "White");
   else if (Red < Blue && Red <= Green && Red < 22 && Green > 35) //if Red value is the lowest one and smaller thant 23 it's likely Red
@@ -738,15 +735,14 @@ void decideAndSendColour()
   else
     colour = 5; // strcpy(colour, "Unknown");                  //if the color is not recognized, you can add as many as you want
 
-//  char colourInString[100];
-//  itoa(colour, colourInString, 10);
-//  TPacket colourPacket;
-//  colourPacket.command = PACKET_TYPE_COMMAND;
-//  colourPacket.packetType = PACKET_TYPE_MESSAGE;
-//  strncpy(colourPacket.data, colourInString, MAX_STR_LEN);
-//  sendResponse(&colourPacket);
-
-  delay(200);                                   //0.2s delay you can modify if you want
+  TPacket colourPacket;
+  colourPacket.command = PACKET_TYPE_COMMAND;
+  colourPacket.packetType = RESP_COLOUR;
+  colourPacket.params[0] = Red;
+  colourPacket.params[1] = Green;
+  colourPacket.params[2] = Blue;
+  colourPacket.params[3] = colour;
+  sendResponse(&colourPacket);
 }
 
 void loop() {
