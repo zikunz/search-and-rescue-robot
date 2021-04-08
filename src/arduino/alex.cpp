@@ -480,8 +480,8 @@ void forward(float dist, float speed) {
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
 
-    pwmWrite(LF, val - 15);
-    pwmWrite(RF, val);
+    pwmWrite(LF, val );
+    pwmWrite(RF, val - 5);
     pwmWrite(LR, 0);
     pwmWrite(RR, 0);
 }
@@ -512,8 +512,8 @@ void reverse(float dist, float speed) {
     // LF = Left forward pin, LR = Left reverse pin
     // RF = Right forward pin, RR = Right reverse pin
     // This will be replaced later with bare-metal code.
-    pwmWrite(LR, val - 15);
-    pwmWrite(RR, val);
+    pwmWrite(LR, val );
+    pwmWrite(RR, val - 5);
     pwmWrite(LF, 0);
     pwmWrite(RF, 0);
 }
@@ -556,8 +556,8 @@ void left(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn left we reverse the left wheel and move
     // the right wheel forward.
-    pwmWrite(LR, val - 15);
-    pwmWrite(RF, val);
+    pwmWrite(LR, val );
+    pwmWrite(RF, val - 5);
     pwmWrite(LF, 0);
     pwmWrite(RR, 0);
 }
@@ -584,8 +584,8 @@ void right(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn right we reverse the right wheel and move
     // the left wheel forward.
-    pwmWrite(RR, val);
-    pwmWrite(LF, val - 15);
+    pwmWrite(RR, val - 5);
+    pwmWrite(LF, val );
     pwmWrite(LR, 0);
     pwmWrite(RF, 0);
 }
