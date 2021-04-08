@@ -21,13 +21,13 @@ typedef enum
 typedef enum
 {
   RESP_OK = 0,
-  RESP_STATUS=1,
+  RESP_STATUS = 1,
   RESP_BAD_PACKET = 2,
   RESP_BAD_CHECKSUM = 3,
   RESP_BAD_COMMAND = 4,
-  RESP_BAD_RESPONSE = 5 
+  RESP_BAD_RESPONSE = 5,
+  RESP_COLOUR = 6
 } TResponseType;
-
 
 // Commands
 // For direction commands, param[0] = distance in cm to move
@@ -40,7 +40,7 @@ typedef enum
   COMMAND_TURN_RIGHT = 3,
   COMMAND_STOP = 4,
   COMMAND_GET_STATS = 5,
-  COMMAND_CLEAR_STATS = 6
+  COMMAND_CLEAR_STATS = 6,
+  COMMAND_SEND_COLOUR = 7
 } TCommandType;
 #endif
-
