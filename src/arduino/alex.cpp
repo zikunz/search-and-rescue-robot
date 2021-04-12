@@ -2,6 +2,7 @@
 #define __AVR_ATmega328P__
 #endif
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <avr/io.h>
 #include <inttypes.h>
 #include <math.h>
