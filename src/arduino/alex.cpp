@@ -871,7 +871,7 @@ void setup() {
     initializeState();
 	setupColourSensor();
 	setupUltrasonicSensor();
-	setupPowerSaving();
+	//setupPowerSaving();
     sei();
 }
 
@@ -932,7 +932,7 @@ void loop() {
             deltaDist = 0;
             newDist = 0;
             stop();
-			putArduinoToIdle();
+			//putArduinoToIdle();
         }
     }
 
@@ -953,7 +953,7 @@ void loop() {
             deltaTicks = 0;
             targetTicks = 0;
             stop();
-			putArduinoToIdle();
+			//putArduinoToIdle();
         }
     }
 }
