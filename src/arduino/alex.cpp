@@ -60,8 +60,112 @@ volatile TDirection dir = STOP;
 #define s3 7
 #define out 8
 
+// mask definitions
+
+// PRR[7] is set to 1 to shut down the Two Wire Interface (TWI) / I2C
+#define PRR_TWI_MASK 0b10000000
+
+// PRR[6] is set to
+#define PRR_TIMER2_MASK 0b01000000
+
+// PRR[5] 
+#define PRR_TIMER0_MASK 0b00100000
+
+ 
+#define PRR_SPI_MASK 0b00000100
+#define PRR_ADC_MASK 0b00000001
+
+#define PRR_TIMER1_MASK 0b00001000
+
+// SMCR[0] is the SE bit. SE is set to 1 to allow the MCU to enter the sleep mode when sleeping instruction is executed. 
+#define SMCR_SLEEP_ENABLE_MASK 0b00000001
+
+// SMCR[0] is the SE bit. SE is set to 1 to allow the MCU to enter the sleep mode when sleeping instruction is executed. 
+// SMCR[3:1] are SM2, SM1 and SM0, SM[2:0] == 000 to put Arduino into idle mode 
+#define SMCR_IDLE_MODE_MASK 0b00000001
+
+// 
+#define ADCSRA_ADC_MASK 0b1000000
+
+
+
+void WDT_off(void) {
+  /* Global interrupt should be turned OFF here if not already done so */
+
+  // Clear WDRF in MCUSR
+  MCUSR &= ~(1 << WDRF);
+
+  // Write logical one to WDCE and WDE
+  // Keep old prescaler setting to prevent unintentional time-out
+  WDTCSR |= (1 << WDCE) | (1 << WDE);
+
+  //Turn off WDT
+  WDTCSR = 0x00;
+
+  //Global interrupt should be turned ON here if subsequent operations after calling this function do not require turning off global interrupt
+}
+
+void setupPowerSaving() {
+  // Turn off the Watchdog Timer
+  WDT_off();
+  // Modify PRR to shut down TWI
+  PRR |= PRR_TWI_MASK;
+  // Modify PRR to shut down SPI
+  PRR |= PRR_SPI_MASK;
+  // Modify ADCSRA to disable ADC,
+  // then modify PRR to shut down ADC
+  ADCSRA |= ADCSRA_ADC_MASK;
+  PRR |= PRR_ADC_MASK;
+  // Set the SMCR to choose the IDLE sleep mode
+  // Do not set the Sleep Enable (SE) bit yet
+  SMCR &= SMCR_IDLE_MODE_MASK;
+  // Set Port B Pin 5 as output pin, then write a logic LOW
+  // to it such that the LED tied to Arduino's Pin 13 is OFF.
+  // e.g.
+  // DDRB |= 0b00100000; // Arduino PIN 13 only
+  // PORTB &= 0b11011111;
+
+  // Pins in use are Arduino pins 5,6,10 & 11, the rest will be turned off accordingly like above
+  DDRD |= 0b1001111;
+  PORTD &= 0b01100000;
+
+  DDRB |= 0b00110011;
+  PORTD &= 0b11001100;
+}
+
+void putArduinoToIdle() {
+  // Modify PRR to shut down TIMER 0, 1 and 2
+  PRR |= PRR_TIMER0_MASK;
+  PRR |= PRR_TIMER1_MASK;
+  PRR |= PRR_TIMER2_MASK;
+  // Modify SE bit in SMCR to enable (i.e., allow) sleep
+  SMCR |= SMCR_SLEEP_ENABLE_MASK;
+  // The following function puts ATmega328P's MCU into sleep;
+  // it wakes up from sleep when USART serial data arrives sleep_cpu();
+  sleep_cpu();
+  // Modify SE bit in SMCR to disable (i.e., disallow) sleep
+  SMCR &= (~SMCR_SLEEP_ENABLE_MASK);
+  // Modify PRR to power up TIMER 0, 1, and 2
+  PRR &= (~PRR_TIMER0_MASK);
+  PRR &= (~PRR_TIMER1_MASK);
+  PRR &= (~PRR_TIMER2_MASK);
+}
+
+
 // For colour sensor initial RGB values
 volatile unsigned long Red = 0, Blue = 0, Green = 0;
+
+// Colour detected by the colour sensor
+volatile unsigned long colour;
+
+
+// Ultrasonic Sensor
+const int trigPin = 11;
+const int echoPin = 12;
+
+float duration, distance;
+
+
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
 float alexDiagonal = 0.0;
@@ -87,6 +191,7 @@ volatile unsigned long rightReverseTicksTurns = 0;
 // and right wheels
 volatile unsigned long leftRevs = 0;
 volatile unsigned long rightRevs = 0;
+
 
 // Forward and backward distance traveled
 volatile unsigned long forwardDist = 0;
@@ -737,6 +842,18 @@ void setupColourSensor()
   DDRB &= 0b11111110;
   PORTD |= 0b00000011;
 }
+
+void setupUltrasonicSensor()
+{
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+int calculateUltrasonic(){
+	
+}
+
+
 void setup() {
     // put your setup code here, to run once:
     alexDiagonal =
@@ -753,6 +870,8 @@ void setup() {
     enablePullups();
     initializeState();
 	setupColourSensor();
+	setupUltrasonicSensor();
+	setupPowerSaving();
     sei();
 }
 
@@ -813,6 +932,7 @@ void loop() {
             deltaDist = 0;
             newDist = 0;
             stop();
+			putArduinoToIdle();
         }
     }
 
@@ -833,6 +953,7 @@ void loop() {
             deltaTicks = 0;
             targetTicks = 0;
             stop();
+			putArduinoToIdle();
         }
     }
 }
