@@ -53,6 +53,15 @@ volatile TDirection dir = STOP;
 #define ALEX_LENGTH 16  // alex length
 #define ALEX_BREADTH 6  // alex breath
 
+// For colour sensor pins
+#define s0 0
+#define s1 1
+#define s2 4
+#define s3 7
+#define out 8
+
+// For colour sensor initial RGB values
+volatile unsigned long Red = 0, Blue = 0, Green = 0;
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
 float alexDiagonal = 0.0;
@@ -187,6 +196,36 @@ void sendStatus() {
     statusPacket.params[7] = rightReverseTicksTurns;
     statusPacket.params[8] = forwardDist;
     statusPacket.params[9] = reverseDist;
+	
+	// S2/S3 levels define which set of photodiodes we are using LOW/LOW is for RED LOW/HIGH is for Blue and HIGH/HIGH is for green
+  // Here we wait until "out" go LOW, we start measuring the duration and stops when "out" is HIGH again, if you have trouble with this expression check the bottom of the code
+  PORTD &= 0b01101111;
+  Red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
+
+  PORTD |= 0b10000000;
+  Blue = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
+
+  PORTD |= 0b00010000;
+  Green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  delay(20);
+
+  if (Red <= 30 && Green <= 40 && Blue <= 30)      //If the values are low it's likely the white color (all the colors are present)
+    colour = 0; // strcpy(colour, "White");
+  else if (Red <= Green && Red < 50 && Green > 60) //if Red value is the lowest one and smaller thant 23 it's likely Red
+    colour = 1; // strcpy(colour, "Red");
+  else if (Blue < Green && Blue < Red && Blue < 40) //Same thing for Blue
+    colour = 2; // strcpy(colour, "Blue");
+  else if (Green < Red && Green - Blue <= 5)      //Green is a little tricky, you can do it using the same method as above (the lowest), but here I used a reflective object
+    colour = 3; // strcpy(colour, "Green");                   //which means the blue value is very low too, so I decided to check the difference between green and blue and see if it's acceptable
+  else if (Red >= 50 && Green >= 55 && Blue >= 45)
+    colour = 4; // strcpy(colour, "Black");
+    
+  statusPacket.params[10] = Red;
+  statusPacket.params[11] = Green;
+  statusPacket.params[12] = Blue;
+  statusPacket.params[13] = colour;
     sendResponse(&statusPacket);
 }
 
@@ -692,7 +731,12 @@ void waitForHello() {
         }
     }  // !exit
 }
-
+void setupColourSensor()
+{
+  DDRD |= 0b10010011;
+  DDRB &= 0b11111110;
+  PORTD |= 0b00000011;
+}
 void setup() {
     // put your setup code here, to run once:
     alexDiagonal =
@@ -708,6 +752,7 @@ void setup() {
     startMotors();
     enablePullups();
     initializeState();
+	setupColourSensor();
     sei();
 }
 
@@ -737,6 +782,8 @@ void loop() {
     // Uncomment the code below for Week 9 Studio 2
 
     // put your main code here, to run repeatedly:
+	PORTD |= 0b11;
+	
     TPacket recvPacket;  // This holds commands from the Pi
 
     TResult result = readPacket(&recvPacket);
