@@ -161,11 +161,11 @@ volatile unsigned long colour;
 
 
 // Ultrasonic Sensor
-const int trigPin = 11;
-const int echoPin = 12;
+#define TRIGGER_PIN 11 // Trigger pin of ultrasonic sensor (orange)
+#define ECHO_PIN 12 // Echo pin of ultrasonic sensor (green)
 
 float duration, distance;
-
+volatile unsigned long near = 0;
 
 // Alex's diagonal. We compute and store this value once
 // since it is expensive to compute and really does not change
@@ -846,12 +846,41 @@ void setupColourSensor()
 
 void setupUltrasonicSensor()
 {
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  //pinMode(trigPin, OUTPUT);
+  //pinMode(echoPin, INPUT);
 }
 
-int calculateUltrasonic(){
-	
+long microsecondsToCentimeters(long microseconds) {
+  return microseconds / 29 / 2;
+}
+void calculateUltrasonic(){
+	long duration, distance;
+	bool isOn = true; // To be changed later, we only want to turn on ultrasonic sensor when Alex stops (not sure...)
+
+	if (isOn) {
+		pinMode(TRIGGER_PIN, OUTPUT);
+		digitalWrite(TRIGGER_PIN, LOW);
+		delayMicroseconds(2);
+		digitalWrite(TRIGGER_PIN, HIGH);
+		delayMicroseconds(10);
+		digitalWrite(TRIGGER_PIN, LOW);
+		pinMode(ECHO_PIN, INPUT);
+		duration = pulseIn(ECHO_PIN, HIGH);
+
+		distance = microsecondsToCentimeters(duration);
+
+		//Serial.print(distance);
+		//Serial.print("cm");
+		if (distance <= 5) {
+			//Serial.print(" Too Close!!!");
+			near = 1;
+		}
+		else near = 0;
+		
+			//Serial.println();
+		//delay(100);
+  }
+  //else off the thing
 }
 
 
@@ -918,7 +947,8 @@ void loop() {
 
     if (deltaDist > 0) {
         if (dir == FORWARD) {
-            if (forwardDist >= newDist) {
+			calculateUltrasonic();
+            if (forwardDist >= newDist || near == 1) {
                 deltaDist = 0;
                 newDist = 0;
                 stop();
