@@ -44,16 +44,11 @@ void handleStatus(TPacket *packet)
 	printf("Right Reverse Ticks Turns:\t%d\n", packet->params[7]);
 	printf("Forward Distance:\t\t%d\n", packet->params[8]);
 	printf("Reverse Distance:\t\t%d\n", packet->params[9]);
-	printf("\n---------------------------------------\n\n");
-}
-
-void handleColour(TPacket *packet)
-{
 	printf("\n ------- COLOUR REPORT ------- \n\n");
-	printf("Red Colour:\t\t%d\n", packet->params[0]);
-	printf("Green Colour:\t\t%d\n", packet->params[1]);
-	printf("Blue Colour:\t\t%d\n", packet->params[2]);
-	printf("Possible Colour:\t\t%d\n", packet->params[3]);
+	printf("Red Colour:\t\t%d\n", packet->params[10]);
+	printf("Green Colour:\t\t%d\n", packet->params[11]);
+	printf("Blue Colour:\t\t%d\n", packet->params[12]);
+	printf("Possible Colour:\t\t%d\n", packet->params[13]);
 	printf("\n---------------------------------------\n\n");
 }
 
@@ -68,10 +63,6 @@ void handleResponse(TPacket *packet)
 
 	case RESP_STATUS:
 		handleStatus(packet);
-		break;
-
-	case RESP_COLOUR:
-		handleColour(packet);
 		break;
 
 	default:
@@ -252,12 +243,6 @@ void sendCommand(char command)
 	case 'q':
 	case 'Q':
 		exitFlag = 1;
-		break;
-
-	case 'i':
-	case 'I':
-		commandPacket.command = COMMAND_SEND_COLOUR;
-		sendPacket(&commandPacket);
 		break;
 
 	default:
