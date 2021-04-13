@@ -170,7 +170,7 @@ void sendCommand(char command) {
 
     switch (command) {
         case 'w':
-			commandPacket.params[0] = 9;
+			commandPacket.params[0] = 5;
             commandPacket.params[1] = 75;
             commandPacket.command = COMMAND_FORWARD;
             sendPacket(&commandPacket);
@@ -184,7 +184,7 @@ void sendCommand(char command) {
             break;
 
         case 's':
-			commandPacket.params[0] = 9;
+			commandPacket.params[0] = 5;
             commandPacket.params[1] = 75;
             commandPacket.command = COMMAND_REVERSE;
             sendPacket(&commandPacket);
@@ -198,8 +198,8 @@ void sendCommand(char command) {
             break;
 
         case 'a':
-			commandPacket.params[0] = 13;
-            commandPacket.params[1] = 78;
+			commandPacket.params[0] = 20;
+            commandPacket.params[1] = 85;
             commandPacket.command = COMMAND_TURN_LEFT;
             sendPacket(&commandPacket);
             break;

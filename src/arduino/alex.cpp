@@ -89,6 +89,57 @@ volatile TDirection dir = STOP;
 #define ADCSRA_ADC_MASK 0b1000000
 
 
+// For colour sensor initial RGB values
+volatile unsigned long Red = 0, Blue = 0, Green = 0;
+
+// Colour detected by the colour sensor
+volatile unsigned long colour;
+
+
+// Ultrasonic Sensor
+#define TRIGGER_PIN 11 // Trigger pin of ultrasonic sensor (orange)
+#define ECHO_PIN 12 // Echo pin of ultrasonic sensor (green)
+
+volatile int near = 0; // 0 for not very near and 1 for very near
+
+// Alex's diagonal. We compute and store this value once
+// since it is expensive to compute and really does not change
+float alexDiagonal = 0.0;
+float alexCirc = 0.0;
+
+/*
+ *    Alex's State Variables
+ */
+
+// Store the ticks from Alex's left and
+// right encoders.
+volatile unsigned long leftForwardTicks = 0;
+volatile unsigned long rightForwardTicks = 0;
+volatile unsigned long leftReverseTicks = 0;
+volatile unsigned long rightReverseTicks = 0;
+
+volatile unsigned long leftForwardTicksTurns = 0;
+volatile unsigned long rightForwardTicksTurns = 0;
+volatile unsigned long leftReverseTicksTurns = 0;
+volatile unsigned long rightReverseTicksTurns = 0;
+
+// Store the revolutions on Alex's left
+// and right wheels
+volatile unsigned long leftRevs = 0;
+volatile unsigned long rightRevs = 0;
+
+
+// Forward and backward distance traveled
+volatile unsigned long forwardDist = 0;
+volatile unsigned long reverseDist = 0;
+
+// Variables to keep track of whether we have moved a command distance//
+volatile unsigned long deltaDist = 0;
+volatile unsigned long newDist = 0;
+
+// Variables to keep track of our turning angle
+volatile unsigned long deltaTicks = 0;
+volatile unsigned long targetTicks = 0;
 
 void WDT_off(void) {
   /* Global interrupt should be turned OFF here if not already done so */
@@ -152,59 +203,6 @@ void putArduinoToIdle() {
   PRR &= (~PRR_TIMER2_MASK);
 }
 
-
-// For colour sensor initial RGB values
-volatile unsigned long Red = 0, Blue = 0, Green = 0;
-
-// Colour detected by the colour sensor
-volatile unsigned long colour;
-
-
-// Ultrasonic Sensor
-#define TRIGGER_PIN 11 // Trigger pin of ultrasonic sensor (orange)
-#define ECHO_PIN 12 // Echo pin of ultrasonic sensor (green)
-
-float duration, distance;
-volatile unsigned long near = 0;
-
-// Alex's diagonal. We compute and store this value once
-// since it is expensive to compute and really does not change
-float alexDiagonal = 0.0;
-float alexCirc = 0.0;
-
-/*
- *    Alex's State Variables
- */
-
-// Store the ticks from Alex's left and
-// right encoders.
-volatile unsigned long leftForwardTicks = 0;
-volatile unsigned long rightForwardTicks = 0;
-volatile unsigned long leftReverseTicks = 0;
-volatile unsigned long rightReverseTicks = 0;
-
-volatile unsigned long leftForwardTicksTurns = 0;
-volatile unsigned long rightForwardTicksTurns = 0;
-volatile unsigned long leftReverseTicksTurns = 0;
-volatile unsigned long rightReverseTicksTurns = 0;
-
-// Store the revolutions on Alex's left
-// and right wheels
-volatile unsigned long leftRevs = 0;
-volatile unsigned long rightRevs = 0;
-
-
-// Forward and backward distance traveled
-volatile unsigned long forwardDist = 0;
-volatile unsigned long reverseDist = 0;
-
-// Variables to keep track of whether we have moved a command distance//
-volatile unsigned long deltaDist = 0;
-volatile unsigned long newDist = 0;
-
-// Variables to keep track of our turning angle
-volatile unsigned long deltaTicks = 0;
-volatile unsigned long targetTicks = 0;
 
 void pwmWrite(uint8_t pin, int val) {
     volatile uint8_t* timer_comp;
@@ -629,6 +627,7 @@ void forward(float dist, float speed) {
     pwmWrite(RF, val - 5);
     pwmWrite(LR, 0);
     pwmWrite(RR, 0);
+    
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -729,7 +728,7 @@ void right(float ang, float speed) {
     // We will also replace this code with bare-metal later.
     // To turn right we reverse the right wheel and move
     // the left wheel forward.
-    pwmWrite(RR, val - 5);
+    pwmWrite(RR, val - 7);
     pwmWrite(LF, val );
     pwmWrite(LR, 0);
     pwmWrite(RF, 0);
@@ -839,9 +838,11 @@ void waitForHello() {
 }
 void setupColourSensor()
 {
-  DDRD |= 0b10010011;
-  DDRB &= 0b11111110;
-  PORTD |= 0b00000011;
+//  DDRD |= 0b10010011;
+//  DDRB &= 0b11111110;
+//  PORTD |= 0b00000011;
+pinMode(s0,INPUT);digitalWrite(s0,LOW);
+pinMode(s1,INPUT);digitalWrite(s1,LOW);
 }
 
 void setupUltrasonicSensor()
@@ -858,20 +859,20 @@ void calculateUltrasonic(){
 	bool isOn = true; // To be changed later, we only want to turn on ultrasonic sensor when Alex stops (not sure...)
 
 	if (isOn) {
-		pinMode(TRIGGER_PIN, OUTPUT);
-		digitalWrite(TRIGGER_PIN, LOW);
+		DDRB |= 0b00001000; // pinMode(TRIGGER_PIN, OUTPUT);
+		PORTB &= 0b11110111; // digitalWrite(TRIGGER_PIN, LOW);
 		delayMicroseconds(2);
-		digitalWrite(TRIGGER_PIN, HIGH);
+		PORTB |= 0b00001000; // digitalWrite(TRIGGER_PIN, HIGH);
 		delayMicroseconds(10);
-		digitalWrite(TRIGGER_PIN, LOW);
-		pinMode(ECHO_PIN, INPUT);
+		PORTB &= 0b11110111; // digitalWrite(TRIGGER_PIN, LOW);
+		DDRB &= 0b11101111; // pinMode(ECHO_PIN, INPUT);
 		duration = pulseIn(ECHO_PIN, HIGH);
 
 		distance = microsecondsToCentimeters(duration);
 
 		//Serial.print(distance);
 		//Serial.print("cm");
-		if (distance <= 5) {
+		if (distance <=10) {
 			//Serial.print(" Too Close!!!");
 			near = 1;
 		}
@@ -899,7 +900,7 @@ void setup() {
     startMotors();
     enablePullups();
     initializeState();
-	setupColourSensor();
+	  setupColourSensor();
 	setupUltrasonicSensor();
 	//setupPowerSaving();
     sei();
@@ -947,10 +948,10 @@ void loop() {
 
     if (deltaDist > 0) {
         if (dir == FORWARD) {
-			calculateUltrasonic();
             if (forwardDist >= newDist || near == 1) {
                 deltaDist = 0;
                 newDist = 0;
+                calculateUltrasonic();
                 stop();
             }
         } else if (dir == BACKWARD) {
