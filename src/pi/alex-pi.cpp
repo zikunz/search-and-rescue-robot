@@ -1,11 +1,19 @@
 #include <pthread.h>
+
 #include <semaphore.h>
+
 #include <stdint.h>
+
 #include <stdio.h>
+
 #include <unistd.h>
+
 #include "../common/constants.h"
+
 #include "../common/packet.h"
+
 #include "../common/serialize.h"
+
 #include "serial.h"
 
 //#define PORT_NAME			"/dev/ttyACM0"
@@ -16,111 +24,112 @@ sem_t _xmitSema;
 
 void handleError(TResult error) {
     switch (error) {
-        case PACKET_BAD:
-            printf("ERROR: Bad Magic Number\n");
-            break;
+    case PACKET_BAD:
+        printf("ERROR: Bad Magic Number\n");
+        break;
 
-        case PACKET_CHECKSUM_BAD:
-            printf("ERROR: Bad checksum\n");
-            break;
+    case PACKET_CHECKSUM_BAD:
+        printf("ERROR: Bad checksum\n");
+        break;
 
-        default:
-            printf("ERROR: UNKNOWN ERROR\n");
+    default:
+        printf("ERROR: UNKNOWN ERROR\n");
     }
 }
 
-void handleStatus(TPacket* packet) {
-    printf("\n ------- ALEX STATUS REPORT ------- \n\n");
-    printf("Left Forward Ticks:\t\t%d\n", packet->params[0]);
-    printf("Right Forward Ticks:\t\t%d\n", packet->params[1]);
-    printf("Left Reverse Ticks:\t\t%d\n", packet->params[2]);
-    printf("Right Reverse Ticks:\t\t%d\n", packet->params[3]);
-    printf("Left Forward Ticks Turns:\t%d\n", packet->params[4]);
-    printf("Right Forward Ticks Turns:\t%d\n", packet->params[5]);
-    printf("Left Reverse Ticks Turns:\t%d\n", packet->params[6]);
-    printf("Right Reverse Ticks Turns:\t%d\n", packet->params[7]);
-    printf("Forward Distance:\t\t%d\n", packet->params[8]);
-    printf("Reverse Distance:\t\t%d\n", packet->params[9]);
-	printf("\n ------- COLOUR REPORT ------- \n\n");
-	printf("Red Colour:\t\t%d\n", packet->params[10]);
-	printf("Green Colour:\t\t%d\n", packet->params[11]);
-	printf("Blue Colour:\t\t%d\n", packet->params[12]);
-	printf("Possible Colour:\t\t%d\n", packet->params[13]);
-    printf("\n---------------------------------------\n\n");
+void handleStatus(TPacket * packet) {
+    // printf("\n ------- ALEX STATUS REPORT ------- \n\n");
+    // printf("Left Forward Ticks:\t\t%d\n", packet->params[0]);
+    // printf("Right Forward Ticks:\t\t%d\n", packet->params[1]);
+    // printf("Left Reverse Ticks:\t\t%d\n", packet->params[2]);
+    // printf("Right Reverse Ticks:\t\t%d\n", packet->params[3]);
+    // printf("Left Forward Ticks Turns:\t%d\n", packet->params[4]);
+    // printf("Right Forward Ticks Turns:\t%d\n", packet->params[5]);
+    // printf("Left Reverse Ticks Turns:\t%d\n", packet->params[6]);
+    // printf("Right Reverse Ticks Turns:\t%d\n", packet->params[7]);
+    // printf("Forward Distance:\t\t%d\n", packet->params[8]);
+    // printf("Reverse Distance:\t\t%d\n", packet->params[9]);
+    // printf("\n ------- COLOUR REPORT ------- \n\n");
+    // printf("Red Colour:\t\t%d\n", packet->params[10]);
+    // printf("Green Colour:\t\t%d\n", packet->params[11]);
+    // printf("Blue Colour:\t\t%d\n", packet->params[12]);
+    printf("Colour:\t\t%c\n", packet -> params[0]);
+    printf("Distance:\t\t%d\n", packet -> params[1]);
+    // printf("\n---------------------------------------\n\n");
 }
 
-void handleResponse(TPacket* packet) {
+void handleResponse(TPacket * packet) {
     // The response code is stored in command
-    switch (packet->command) {
-        case RESP_OK:
-            printf("Command OK\n");
-            break;
+    switch (packet -> command) {
+    case RESP_OK:
+        printf("Command OK\n");
+        break;
 
-        case RESP_STATUS:
-            handleStatus(packet);
-            break;
+    case RESP_STATUS:
+        handleStatus(packet);
+        break;
 
-        default:
-            printf("Arduino is confused\n");
+    default:
+        printf("Arduino is confused\n");
     }
 }
 
-void handleErrorResponse(TPacket* packet) {
+void handleErrorResponse(TPacket * packet) {
     // The error code is returned in command
-    switch (packet->command) {
-        case RESP_BAD_PACKET:
-            printf("Arduino received bad magic number\n");
-            break;
+    switch (packet -> command) {
+    case RESP_BAD_PACKET:
+        printf("Arduino received bad magic number\n");
+        break;
 
-        case RESP_BAD_CHECKSUM:
-            printf("Arduino received bad checksum\n");
-            break;
+    case RESP_BAD_CHECKSUM:
+        printf("Arduino received bad checksum\n");
+        break;
 
-        case RESP_BAD_COMMAND:
-            printf("Arduino received bad command\n");
-            break;
+    case RESP_BAD_COMMAND:
+        printf("Arduino received bad command\n");
+        break;
 
-        case RESP_BAD_RESPONSE:
-            printf("Arduino received unexpected response\n");
-            break;
+    case RESP_BAD_RESPONSE:
+        printf("Arduino received unexpected response\n");
+        break;
 
-        default:
-            printf("Arduino reports a weird error\n");
+    default:
+        printf("Arduino reports a weird error\n");
     }
 }
 
-void handleMessage(TPacket* packet) {
-    printf("Message from Alex: %s\n", packet->data);
+void handleMessage(TPacket * packet) {
+    printf("Message from Alex: %s\n", packet -> data);
 }
 
-void handlePacket(TPacket* packet) {
-    switch (packet->packetType) {
-        case PACKET_TYPE_COMMAND:
-            // Only we send command packets, so ignore
-            break;
+void handlePacket(TPacket * packet) {
+    switch (packet -> packetType) {
+    case PACKET_TYPE_COMMAND:
+        // Only we send command packets, so ignore
+        break;
 
-        case PACKET_TYPE_RESPONSE:
-            handleResponse(packet);
-            break;
+    case PACKET_TYPE_RESPONSE:
+        handleResponse(packet);
+        break;
 
-        case PACKET_TYPE_ERROR:
-            handleErrorResponse(packet);
-            break;
+    case PACKET_TYPE_ERROR:
+        handleErrorResponse(packet);
+        break;
 
-        case PACKET_TYPE_MESSAGE:
-            handleMessage(packet);
-            break;
+    case PACKET_TYPE_MESSAGE:
+        handleMessage(packet);
+        break;
     }
 }
 
-void sendPacket(TPacket* packet) {
+void sendPacket(TPacket * packet) {
     char buffer[PACKET_SIZE];
     int len = serialize(buffer, packet, sizeof(TPacket));
 
     serialWrite(buffer, len);
 }
 
-void* receiveThread(void* p) {
+void * receiveThread(void * p) {
     char buffer[PACKET_SIZE];
     int len;
     TPacket packet;
@@ -131,11 +140,11 @@ void* receiveThread(void* p) {
         len = serialRead(buffer);
         counter += len;
         if (len > 0) {
-            result = deserialize(buffer, len, &packet);
+            result = deserialize(buffer, len, & packet);
 
             if (result == PACKET_OK) {
                 counter = 0;
-                handlePacket(&packet);
+                handlePacket( & packet);
             } else if (result != PACKET_INCOMPLETE) {
                 printf("PACKET ERROR\n");
                 handleError(result);
@@ -152,14 +161,14 @@ void flushInput() {
     }
 }
 
-void getParams(TPacket* commandPacket) {
+void getParams(TPacket * commandPacket) {
     printf(
         "Enter distance/angle in cm/degrees (e.g. 50) and power in %% (e.g. "
         "75) separated by space.\n");
     printf(
         "E.g. 50 75 means go at 50 cm at 75%% power for forward/backward, or "
         "50 degrees left or right turn at 75%%  power\n");
-    scanf("%d %d", &commandPacket->params[0], &commandPacket->params[1]);
+    scanf("%d %d", & commandPacket -> params[0], & commandPacket -> params[1]);
     flushInput();
 }
 
@@ -169,88 +178,104 @@ void sendCommand(char command) {
     commandPacket.packetType = PACKET_TYPE_COMMAND;
 
     switch (command) {
-        case 'w':
-			commandPacket.params[0] = 5;
-            commandPacket.params[1] = 75;
-            commandPacket.command = COMMAND_FORWARD;
-            sendPacket(&commandPacket);
-            break;
-        case 'W':
-            // getParams(&commandPacket);
-            commandPacket.params[0] = 11;
-            commandPacket.params[1] = 100;
-            commandPacket.command = COMMAND_FORWARD;
-            sendPacket(&commandPacket);
-            break;
+    case 'w':
+        commandPacket.params[0] = 7;
+        commandPacket.params[1] = 75;
+        commandPacket.command = COMMAND_FORWARD;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
+    case 'W':
+        // getParams(&commandPacket);
+        commandPacket.params[0] = 11;
+        commandPacket.params[1] = 100;
+        commandPacket.command = COMMAND_FORWARD;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
 
-        case 's':
-			commandPacket.params[0] = 5;
-            commandPacket.params[1] = 75;
-            commandPacket.command = COMMAND_REVERSE;
-            sendPacket(&commandPacket);
-            break;
-        case 'S':
-            // getParams(&commandPacket);
-            commandPacket.params[0] = 11;
-            commandPacket.params[1] = 100;
-            commandPacket.command = COMMAND_REVERSE;
-            sendPacket(&commandPacket);
-            break;
+    case 's':
+        commandPacket.params[0] = 7;
+        commandPacket.params[1] = 75;
+        commandPacket.command = COMMAND_REVERSE;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
+    case 'S':
+        // getParams(&commandPacket);
+        commandPacket.params[0] = 9;
+        commandPacket.params[1] = 100;
+        commandPacket.command = COMMAND_REVERSE;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'a':
-			commandPacket.params[0] = 20;
-            commandPacket.params[1] = 85;
-            commandPacket.command = COMMAND_TURN_LEFT;
-            sendPacket(&commandPacket);
-            break;
-        case 'A':
-            // getParams(&commandPacket);
-            commandPacket.params[0] = 12;
-            commandPacket.params[1] = 95;
-            commandPacket.command = COMMAND_TURN_LEFT;
-            sendPacket(&commandPacket);
-            break;
+    case 'a':
+        commandPacket.params[0] = 12;
+        commandPacket.params[1] = 80;
+        commandPacket.command = COMMAND_TURN_LEFT;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
+    case 'A':
+        // getParams(&commandPacket);
+        commandPacket.params[0] = 12;
+        commandPacket.params[1] = 95;
+        commandPacket.command = COMMAND_TURN_LEFT;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'd':
-			commandPacket.params[0] = 20;
-            commandPacket.params[1] = 80;
-            commandPacket.command = COMMAND_TURN_RIGHT;
-            sendPacket(&commandPacket);
-            break;
-        case 'D':
-            // getParams(&commandPacket);
-            commandPacket.params[0] = 20;
-            commandPacket.params[1] = 95;
-            commandPacket.command = COMMAND_TURN_RIGHT;
-            sendPacket(&commandPacket);
-            break;
+    case 'd':
+        commandPacket.params[0] = 17;
+        commandPacket.params[1] = 78;
+        commandPacket.command = COMMAND_TURN_RIGHT;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
+    case 'D':
+        // getParams(&commandPacket);
+        commandPacket.params[0] = 20;
+        commandPacket.params[1] = 95;
+        commandPacket.command = COMMAND_TURN_RIGHT;
+        sendPacket( & commandPacket);
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'e':
-        case 'E':
-            commandPacket.command = COMMAND_STOP;
-            sendPacket(&commandPacket);
-            break;
+    case 'e':
+    case 'E':
+        commandPacket.command = COMMAND_STOP;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'c':
-        case 'C':
-            commandPacket.command = COMMAND_CLEAR_STATS;
-            commandPacket.params[0] = 0;
-            sendPacket(&commandPacket);
-            break;
+    case 'c':
+    case 'C':
+        commandPacket.command = COMMAND_CLEAR_STATS;
+        commandPacket.params[0] = 0;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'g':
-        case 'G':
-            commandPacket.command = COMMAND_GET_STATS;
-            sendPacket(&commandPacket);
-            break;
+    case 'g':
+    case 'G':
+        commandPacket.command = COMMAND_GET_STATS;
+        sendPacket( & commandPacket);
+        break;
 
-        case 'q':
-        case 'Q':
-            exitFlag = 1;
-            break;
-            // ADD A CASE TO GET THE COLOR SENSOR DATA
-        default:
-            printf("Bad command\n");
+    case 'q':
+    case 'Q':
+        exitFlag = 1;
+        break;
+        // ADD A CASE TO GET THE COLOR SENSOR DATA
+    default:
+        printf("Bad command\n");
     }
 }
 
@@ -266,20 +291,20 @@ int main() {
     // Spawn receiver thread
     pthread_t recv;
 
-    pthread_create(&recv, NULL, receiveThread, NULL);
+    pthread_create( & recv, NULL, receiveThread, NULL);
 
     // Send a hello packet
     TPacket helloPacket;
 
     helloPacket.packetType = PACKET_TYPE_HELLO;
-    sendPacket(&helloPacket);
+    sendPacket( & helloPacket);
 
     while (!exitFlag) {
         char ch;
         printf(
             "Command (w=forward, s=reverse, a=turn left, d=turn right, e=stop, "
             "c=clear stats, g=get stats q=exit, USE CAPITAL LETTERS FOR MORE POWER!!!!)\n");
-        scanf("%c", &ch);
+        scanf("%c", & ch);
 
         // Purge extraneous characters from input stream
         flushInput();
