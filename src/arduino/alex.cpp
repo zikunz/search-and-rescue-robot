@@ -39,11 +39,11 @@
 #define ALEX_BREADTH 6  // alex breath
 
 // TCS3200/230 colour sensor pins
-#define s0 0
-#define s1 1
-#define s2 4
-#define s3 7
-#define out 8
+#define S0 0
+#define S1 1
+#define S2 4
+#define S3 7
+#define OUT 8
 
 // Mask definitions for power management
 #define PRR_TWI_MASK 0b10000000
@@ -115,7 +115,7 @@ volatile unsigned long blue = 0;
 volatile unsigned long green = 0;
 
 // Colour detected by TCS3200/230 colour sensor
-volatile char colour; // 'u' for unknown, 'r' for red and 'g' for green
+volatile unsigned long colour; // 'u' for unknown, 'r' for red and 'g' for green
 
 // Ultrasonic sensor reading
 volatile int near = 0; // 0 for not very near and 1 for very near
@@ -296,15 +296,15 @@ void sendStatus() {
     delay(20);*/
 
   // Sketch version
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, LOW);
-  red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  red = pulseIn(OUT, digitalRead(OUT) == HIGH ? LOW : HIGH);
   delay(20);
-  digitalWrite(s3, HIGH);
-  blue = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  digitalWrite(S3, HIGH);
+  blue = pulseIn(OUT, digitalRead(OUT) == HIGH ? LOW : HIGH);
   delay(20);
-  digitalWrite(s2, HIGH);
-  green = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  digitalWrite(S2, HIGH);
+  green = pulseIn(OUT, digitalRead(OUT) == HIGH ? LOW : HIGH);
   delay(20);
 
 
@@ -318,21 +318,21 @@ void sendStatus() {
 
   // Default calibration
   if (red < blue && red <= green && red < 22 && green > 35) {
-    colour = 'r'; // red
+    colour = 1; // red
   } else if (green < red && green - blue <= 8) {
-    colour = 'g'; // green
+    colour = 2; // green
   } else {
-    colour = 'u';
+    colour = 0;
   }
   statusPacket.params[0] = colour;
   //delay(200);
 
-  //  statusPacket.params[10] = red;
-  //  statusPacket.params[11] = green;
-  //  statusPacket.params[12] = blue;
+  statusPacket.params[1] = red;
+  statusPacket.params[2] = green;
+  statusPacket.params[3] = blue;
 
   int distance = calculateUltrasonic();
-  statusPacket.params[1] = distance;
+  statusPacket.params[4] = distance;
 
   sendResponse(&statusPacket);
 }
@@ -819,14 +819,14 @@ void setupColourSensor()
   //  DDRD |= 0b10010011;
   //  DDRB &= 0b11111110;
   //  PORTD |= 0b00000011;
-  pinMode(s0, OUTPUT);
-  pinMode(s1, OUTPUT);
-  pinMode(s2, OUTPUT);
-  pinMode(s3, OUTPUT);
-  pinMode(out, INPUT);
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(OUT, INPUT);
 
-  digitalWrite(s0, HIGH);
-  digitalWrite(s1, HIGH);
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, HIGH);
 }
 
 void setupUltrasonicSensor()
@@ -842,20 +842,25 @@ long microsecondsToCentimeters(long microseconds) {
 int calculateUltrasonic() {
   long duration, distance;
 
-  DDRB |= 0b00001000; // pinMode(TRIGGER_PIN, OUTPUT);
-  PORTB &= 0b11110111; // digitalWrite(TRIGGER_PIN, LOW);
-  //delayMicroseconds(2);
-  PORTB |= 0b00001000; // digitalWrite(TRIGGER_PIN, HIGH);
-  //delayMicroseconds(10);
-  PORTB &= 0b11110111; // digitalWrite(TRIGGER_PIN, LOW);
-  DDRB &= 0b11101111; // pinMode(ECHO_PIN, INPUT);
+  //DDRB |= 0b00001000; 
+  pinMode(TRIGGER_PIN, OUTPUT);
+  //PORTB &= 0b11110111; 
+  digitalWrite(TRIGGER_PIN, LOW);
+  delayMicroseconds(2);
+  //PORTB |= 0b00001000; 
+   digitalWrite(TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  //PORTB &= 0b11110111; 
+  digitalWrite(TRIGGER_PIN, LOW);
+  //DDRB &= 0b11101111; 
+   pinMode(ECHO_PIN, INPUT);
   duration = pulseIn(ECHO_PIN, HIGH);
 
   distance = microsecondsToCentimeters(duration);
 
   //Serial.print(distance);
   //Serial.print("cm");
-  if (distance <= 8) {
+  if (distance <= 6) {
     //Serial.print(" Too Close!!!");
     near = 1;
   } else {
@@ -931,7 +936,7 @@ void loop() {
       if (forwardDist >= newDist || near == 1) {
         deltaDist = 0;
         newDist = 0;
-        calculateUltrasonic();
+        int temp = calculateUltrasonic();// this is wrong
         stop();
       }
     } else if (dir == BACKWARD) {
