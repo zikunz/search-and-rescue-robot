@@ -41,11 +41,11 @@ void handleStatus(TPacket* packet) {
     // printf("Right Reverse Ticks Turns:\t%d\n", packet->params[7]);
     // printf("Forward Distance:\t\t%d\n", packet->params[8]);
     // printf("Reverse Distance:\t\t%d\n", packet->params[9]);
-	// printf("\n ------- COLOUR REPORT ------- \n\n");
-	// printf("Red Colour:\t\t%d\n", packet->params[10]);
-	// printf("Green Colour:\t\t%d\n", packet->params[11]);
-	// printf("Blue Colour:\t\t%d\n", packet->params[12]);
-	printf("Colour:\t\t%d\n", packet->params[0]);
+    // printf("\n ------- COLOUR REPORT ------- \n\n");
+    // printf("Red Colour:\t\t%d\n", packet->params[10]);
+    // printf("Green Colour:\t\t%d\n", packet->params[11]);
+    // printf("Blue Colour:\t\t%d\n", packet->params[12]);
+    printf("Colour:\t\t%d\n", packet->params[0]);
     printf("R:\t\t%d\n", packet->params[1]);
     printf("G:\t\t%d\n", packet->params[2]);
     printf("B:\t\t%d\n", packet->params[3]);
@@ -174,12 +174,12 @@ void sendCommand(char command) {
 
     switch (command) {
         case 'w':
-			commandPacket.params[0] = 7;
+            commandPacket.params[0] = 7;
             commandPacket.params[1] = 75;
             commandPacket.command = COMMAND_FORWARD;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
         case 'W':
             // getParams(&commandPacket);
@@ -187,17 +187,17 @@ void sendCommand(char command) {
             commandPacket.params[1] = 100;
             commandPacket.command = COMMAND_FORWARD;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
 
         case 's':
-			commandPacket.params[0] = 7;
+            commandPacket.params[0] = 7;
             commandPacket.params[1] = 75;
             commandPacket.command = COMMAND_REVERSE;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
         case 'S':
             // getParams(&commandPacket);
@@ -205,17 +205,17 @@ void sendCommand(char command) {
             commandPacket.params[1] = 100;
             commandPacket.command = COMMAND_REVERSE;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
 
         case 'a':
-			commandPacket.params[0] = 12;
+            commandPacket.params[0] = 12;
             commandPacket.params[1] = 78;
             commandPacket.command = COMMAND_TURN_LEFT;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
         case 'A':
             // getParams(&commandPacket);
@@ -223,17 +223,17 @@ void sendCommand(char command) {
             commandPacket.params[1] = 95;
             commandPacket.command = COMMAND_TURN_LEFT;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
 
         case 'd':
-			commandPacket.params[0] = 14;
+            commandPacket.params[0] = 14;
             commandPacket.params[1] = 80;
             commandPacket.command = COMMAND_TURN_RIGHT;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
         case 'D':
             // getParams(&commandPacket);
@@ -241,8 +241,8 @@ void sendCommand(char command) {
             commandPacket.params[1] = 95;
             commandPacket.command = COMMAND_TURN_RIGHT;
             sendPacket(&commandPacket);
-            //commandPacket.command = COMMAND_GET_STATS;
-            //sendPacket(&commandPacket);
+            // commandPacket.command = COMMAND_GET_STATS;
+            // sendPacket(&commandPacket);
             break;
 
         case 'e':
@@ -298,7 +298,8 @@ int main() {
         char ch;
         printf(
             "Command (w=forward, s=reverse, a=turn left, d=turn right, e=stop, "
-            "c=clear stats, g=get stats q=exit, USE CAPITAL LETTERS FOR MORE POWER!!!!)\n");
+            "c=clear stats, g=get stats q=exit, USE CAPITAL LETTERS FOR MORE "
+            "POWER!!!!)\n");
         scanf("%c", &ch);
 
         // Purge extraneous characters from input stream

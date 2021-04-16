@@ -47,7 +47,7 @@ void initBuffer(volatile TBuffer* buffer, unsigned int size) {
 // initBuffer. "data" is character to 		write to buffer.
 // POST:
 //		"data" is written to "buffer" and writeBuffer returns BUFFER_OK
-//if
+// if
 // space is available. 		"data" is discarded and writeBuffer returns
 // BUFFER_FULL if space is not available. 		"data" is discarded and
 // writeBuffer returns BUFFER_INVALID if "buffer" was not initialized using
@@ -80,12 +80,13 @@ TBufferResult writeBuffer(volatile TBuffer* buffer, unsigned char data) {
 // char.
 // POST:
 //		Variable pointed to by "data" contains character read from head
-//of
+// of
 // the queue, and readBuffer returns 		BUFFER_OK if data is available
-// for reading. 		Variable pointed to by "data" is unmodified, and readBuffer
-// returns BUFFER_EMTPY if no data is available. 		Variable pointed to
-// by "data" is unmodified, and readBuffer returns BUFFER_INVALID if "buffer" was
-// not initialized using initBuffer.
+// for reading. 		Variable pointed to by "data" is unmodified, and
+// readBuffer
+// returns BUFFER_EMTPY if no data is available. 		Variable pointed
+// to by "data" is unmodified, and readBuffer returns BUFFER_INVALID if "buffer"
+// was not initialized using initBuffer.
 
 TBufferResult readBuffer(volatile TBuffer* buffer, unsigned char* data) {
     enterAtomic(&buffer->csreg);
