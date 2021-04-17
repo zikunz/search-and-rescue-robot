@@ -1,24 +1,8 @@
 # Alex to the Rescue!
-CG1112 Engineering Principles and Practice II Final Project by Group B02-2A.
+CG1112 Engineering Principles and Practice II final project by Group B02-2A.
 
-## Background (Adopted from Course Material)
-72 hours. That is the "golden period" to locate and rescue survivors in the aftermath of
-natural / manmade disasters such as earthquake, landslide and terrorist attack. Against the
-ticking clock, rescuers have to brave incredible difficulties like rubbles / debris, narrow /
-impassable passages and / or hazardous environment to look for any sign of life. Fortunately,
-recent robotic advancement opens up many new possibilities for the rescue team.
-
-## Group Members
-| *Name* | *Role* |
-| ------------- | ------------- |
-| [Prof Boyd Anderson](https://github.com/boydanderson) | Instructor |
-| [Darren Loh Rui Jie](https://github.com/saintmist21) | Hardware Engineer |
-| [Hoang Trong Tan](https://github.com/jushg) | Software Engineer |
-| [Hu Jialun](https://github.com/SuibianP) | Firmware and Software Engineer |
-| [Zhu Zikun](https://github.com/zikunz) | Software Engineer |
-
-## Objectives
-The robotic vehicle, otherwise known as Alex, is designed to be an efficient engineering solution simulating a fully functioned and remotely controlled Search and Rescue (SAR) robot.
+## Background and Objectives
+In 2010, an earthquake took place in Haiti which killed about 316,000 people including rescuers. When a natural disaster of a similar scale occurs, it can be highly unsafe for humans to traverse physically, making capable teleoperated robots come in handy when locating victims. The robotic vehicle, otherwise known as Alex, is designed to be an efficient engineering solution simulating a fully functioned and remotely controlled Search and Rescue (SAR) robot. 
 
 ## Main Functionality 
 The main functionalities of Alex can be summarised in the table below.
@@ -52,3 +36,12 @@ The main functionalities of Alex can be summarised in the table below.
 - `avrdude`: flash onto board
 - `clang-tidy`: lint code
 - `clang-format`: format code
+
+## Group Members
+| *Name* | *Role* |
+| ------------- | ------------- |
+| [Prof Boyd Anderson](https://github.com/boydanderson) | Instructor |
+| [Darren Loh Rui Jie](https://github.com/saintmist21) | Hardware Engineer |
+| [Hoang Trong Tan](https://github.com/jushg) | Software Engineer, Driver |
+| [Hu Jialun](https://github.com/SuibianP) | Firmware Engineer |
+| [Zhu Zikun](https://github.com/zikunz) | Software Engineer |
