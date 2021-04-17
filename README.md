@@ -12,17 +12,22 @@ recent robotic advancement opens up many new possibilities for the rescue team.
 | *Name* | *Role* |
 | ------------- | ------------- |
 | [Prof Boyd Anderson](https://github.com/boydanderson) | Instructor |
-| [Darren Loh Rui Jie](https://github.com/saintmist21) | To be decided |
-| [Hoang Trong Tan](https://github.com/jushg) | To be decided |
-| [Hu Jialun](https://github.com/SuibianP) | To be decided |
-| [Zhu Zikun](https://github.com/zikunz) | To be decided |
+| [Darren Loh Rui Jie](https://github.com/saintmist21) | Hardware Engineer |
+| [Hoang Trong Tan](https://github.com/jushg) | Software Engineer |
+| [Hu Jialun](https://github.com/SuibianP) | Firmware and Software Engineer |
+| [Zhu Zikun](https://github.com/zikunz) | Software Engineer |
 
 ## Objectives, Algorithms and Design Features
-### Main Functionality – Environment Mapping
-To be added
-
-### Additional Functionality
-To be added
+### Main Functionality 
+The main functionalities of Alex can be summarised in the table below.
+| Functionality  | Medium | Brief Description and Methodology |
+| ------------- | ------------- | ------------- |
+| Remote Control  | Secure Socket Shell (SSH) or Virtual Network Computing (VNC)  | Through serial communication, it allows the user to view a remote desktop of the Raspberry Pi mounted on Alex through the laptop. This also enables the Raspberry Pi to receive commands from the laptop with minimal delay. |
+| Movement of Alex  | Arduino Uno, Motors, Wheel Encoders and HC-SR04 Ultrasonic Sensor  | The user controls the wheels' travel distance and turning angle to make it move at an appropriate speed, which balances accurate mapping and fast rescue operation. Alex is also designed to keep a distance from dangerous obstacles to avoid damaging itself. |
+| Mapping of the Environment  | RPLiDAR  | Alex can produce a map with detailed information about the environment explored using the Simultaneous Localisation and Mapping (SLAM) algorithm and mapping data from the RPLiDAR. |
+| Identification of Existence and Colours of Objects  | GY-31 TCS3200 Colour Sensor  | Alex can recognise different coloured objects by detecting Red Green Blue (RGB) intensities based on reflection and turning on onboard Light Emitting Diodes (LEDs) to increase sensitivity in any dark environment. |
+| Fast Execution  | Arduino Uno  | Through the practice of high-efficiency hardware programming by writing Arduino code in bare-metal, it reduces layers of abstraction and hence increases the execution speed. |
+| Low Power Consumption  | Alex  | Alex can be more energy-efficient by removing or disabling unnecessary hardware components and configuring appropriate registers such as the Sleep Mode Control Register (SMCR) and the Power Reduction Register (PRR) appropriately. |
 
 ## Development
 ### `make` Targets
