@@ -17,8 +17,10 @@ recent robotic advancement opens up many new possibilities for the rescue team.
 | [Hu Jialun](https://github.com/SuibianP) | Firmware and Software Engineer |
 | [Zhu Zikun](https://github.com/zikunz) | Software Engineer |
 
-## Objectives, Algorithms and Design Features
-### Main Functionality 
+## Objectives
+The robotic vehicle, otherwise known as Alex, is designed to be an efficient engineering solution simulating a fully functioned and remotely controlled Search and Rescue (SAR) robot.
+
+## Main Functionality 
 The main functionalities of Alex can be summarised in the table below.
 | Functionality  | Medium | Brief Description and Methodology |
 | ------------- | ------------- | ------------- |
