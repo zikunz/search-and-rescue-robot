@@ -1,6 +1,10 @@
 # Alex to the Rescue!
 CG1112 Engineering Principles and Practice II final project by Group B02-2A.
 
+<p align="center">
+  <img width="500" src="https://user-images.githubusercontent.com/75139323/121623700-bed3db00-caa2-11eb-8b18-d2cb79e11c4e.jpg">
+</p>
+
 ## Background and Objectives
 In 2010, an earthquake took place in Haiti which killed about 316,000 people including rescuers. When a natural disaster of a similar scale occurs, it can be highly unsafe for humans to traverse physically, making capable teleoperated robots come in handy when locating victims. The robotic vehicle, otherwise known as Alex, is designed to be an efficient engineering solution simulating a fully functioned and remotely controlled Search and Rescue (SAR) robot. 
 
